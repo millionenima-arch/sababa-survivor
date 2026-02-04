@@ -8147,7 +8147,7 @@
         let isPaused = false;
 
         function togglePause() {
-            if (!running) return; // Can't pause if not in game
+            if (gameState !== 'playing') return; // Can't pause if not in game
             isPaused = !isPaused;
             const pauseScreen = document.getElementById('pauseScreen');
             if (isPaused) {
@@ -8183,7 +8183,7 @@
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
             // ESC to toggle pause during gameplay (only when level up screen not showing)
-            if (e.code === 'Escape' && running && document.getElementById('levelUpScreen').classList.contains('hidden')) {
+            if (e.code === 'Escape' && gameState === 'playing' && document.getElementById('levelUpScreen').classList.contains('hidden')) {
                 togglePause();
             }
         });
