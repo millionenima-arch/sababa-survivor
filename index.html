@@ -6559,6 +6559,7 @@
             enemies = enemies.filter(e => {
                 if (e.hp <= 0) {
                     kills++;
+                    AudioSystem.playHit(); // Kill sound effect
                     const type = ENEMY_TYPES[e.type];
 
                     // Track kill by enemy type
