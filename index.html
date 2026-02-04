@@ -5436,19 +5436,11 @@
             const skyColors = getSkyColors();
             const ambient = getAmbientLight();
 
-            // ══════ SKY GRADIENT (Day/Night Cycle) ══════
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-            skyGrad.addColorStop(0, skyColors.top);
-            skyGrad.addColorStop(0.6, skyColors.bottom);
-            skyGrad.addColorStop(1, '#E8D4A8');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, W, H);
-
-            // ══════ CLEAN SAND BASE ( tinted by ambient light ) ══════
+            // ══════ CLEAN SAND BASE (Full screen - tinted by ambient light) ══════
             const sandBrightness = Math.floor(232 * ambient + 30);
             const sandColor = `rgb(${sandBrightness}, ${Math.floor(212 * ambient + 20)}, ${Math.floor(168 * ambient + 15)})`;
             ctx.fillStyle = sandColor;
-            ctx.fillRect(0, H * 0.4, W, H * 0.6);
+            ctx.fillRect(0, 0, W, H);
 
             // ══════ OCEAN AT TOP OF WORLD (Fixed in world space) ══════
             // Ocean extends INTO the playable area so player can walk in shallow water
