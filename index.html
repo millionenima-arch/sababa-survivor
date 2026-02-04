@@ -1596,6 +1596,139 @@
                 font-size: 14px;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           DAILY CHALLENGES PANEL
+           ═══════════════════════════════════════════════════════════════════ */
+        .daily-challenges-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 280px;
+            background: linear-gradient(135deg, rgba(10, 10, 20, 0.95), rgba(20, 20, 40, 0.95));
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 101;
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .daily-challenges-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .daily-icon {
+            font-size: 20px;
+        }
+
+        .daily-title {
+            font-family: 'Secular One', sans-serif;
+            font-size: 14px;
+            color: #FFD700;
+            letter-spacing: 1px;
+        }
+
+        .daily-progress {
+            font-family: 'Secular One', sans-serif;
+            font-size: 14px;
+            color: #4ECDC4;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .daily-challenges-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .daily-challenge-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .daily-challenge-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-4px);
+        }
+
+        .daily-challenge-item.completed {
+            background: rgba(78, 205, 196, 0.15);
+            border-color: rgba(78, 205, 196, 0.4);
+        }
+
+        .daily-challenge-item.completed .challenge-name {
+            color: #4ECDC4;
+            text-decoration: line-through;
+        }
+
+        .challenge-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .challenge-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .challenge-progress-bar {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .challenge-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B35, #FF8C42);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .daily-challenge-item.completed .challenge-progress-fill {
+            background: linear-gradient(90deg, #4ECDC4, #2A9D8F);
+        }
+
+        .challenge-reward {
+            font-size: 11px;
+            color: #FFD700;
+            text-align: right;
+        }
+
+        .challenge-status-icon {
+            float: right;
+            font-size: 16px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 
@@ -1627,6 +1760,17 @@
             <div class="stat-item"><span style="opacity:0.6">⏱</span> <span id="timeVal" class="hud-value">0:00</span>
             </div>
             <div class="stat-item"><span style="opacity:0.6">💀</span> <span id="killVal" class="hud-value">0</span>
+            </div>
+        </div>
+        <!-- DAILY CHALLENGES TRACKER -->
+        <div id="dailyChallengesPanel" class="daily-challenges-panel" style="display:none;">
+            <div class="daily-challenges-header">
+                <span class="daily-icon">📅</span>
+                <span class="daily-title">DAILY CHALLENGES</span>
+                <span id="dailyProgress" class="daily-progress">0/3</span>
+            </div>
+            <div id="dailyChallengesList" class="daily-challenges-list">
+                <!-- Challenges will be populated by JS -->
             </div>
         </div>
     </div>
@@ -2663,8 +2807,64 @@
             return dailyChallenges;
         }
 
+        function renderDailyChallenges() {
+            const panel = document.getElementById('dailyChallengesPanel');
+            const list = document.getElementById('dailyChallengesList');
+            const progressEl = document.getElementById('dailyProgress');
+
+            if (!panel || !list) return;
+
+            const challenges = generateDailyChallenges();
+
+            // Show panel
+            panel.style.display = 'block';
+
+            // Update progress
+            const completedCount = challenges.completed.length;
+            progressEl.textContent = `${completedCount}/3`;
+
+            // Build challenge items
+            list.innerHTML = challenges.challenges.map((challenge, index) => {
+                const isCompleted = challenges.completed.includes(challenge.id);
+
+                let currentValue = 0;
+                switch (challenge.stat) {
+                    case 'sessionKills': currentValue = kills || 0; break;
+                    case 'sessionTime': currentValue = Math.floor(gameTime || 0); break;
+                    case 'sessionLevel': currentValue = player ? player.level : 1; break;
+                    case 'sessionBestCombo': currentValue = comboSystem ? comboSystem.bestCombo : 0; break;
+                    case 'xpCollected': currentValue = sessionStats ? (sessionStats.xpGemsCollected || 0) : 0; break;
+                    case 'noDamageTime': currentValue = Math.floor(noDamageTime || 0); break;
+                    case 'criticalHits': currentValue = sessionStats ? (sessionStats.criticalHits || 0) : 0; break;
+                    case 'upgradesTaken': currentValue = sessionStats ? (sessionStats.upgrades || 0) : 0; break;
+                    case 'killsPig': currentValue = sessionStats && sessionStats.killsByType ? (sessionStats.killsByType['Pig'] || 0) : 0; break;
+                    case 'bossKills': currentValue = sessionStats ? (sessionStats.bossKills || 0) : 0; break;
+                    default: currentValue = 0;
+                }
+
+                const progress = Math.min(currentValue / challenge.target, 1);
+                const progressPercent = Math.floor(progress * 100);
+
+                return `
+                    <div class="daily-challenge-item ${isCompleted ? 'completed' : ''}">
+                        <div class="challenge-name">
+                            ${isCompleted ? '✅' : '🎯'} ${challenge.name}
+                        </div>
+                        <div class="challenge-desc">${challenge.desc}</div>
+                        <div class="challenge-progress-bar">
+                            <div class="challenge-progress-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="challenge-reward">
+                            ${isCompleted ? '✓ COMPLETE' : `${currentValue}/${challenge.target} • +${challenge.reward} XP`}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function checkDailyChallenges() {
             const challenges = generateDailyChallenges();
+            let newCompletion = false;
 
             challenges.challenges.forEach((challenge, index) => {
                 if (challenges.completed.includes(challenge.id)) return;
@@ -2685,6 +2885,7 @@
 
                 if (currentValue >= challenge.target) {
                     challenges.completed.push(challenge.id);
+                    newCompletion = true;
 
                     // Show completion notification
                     floatingTexts.push({
@@ -2710,6 +2911,11 @@
                     });
                 }
             });
+
+            // Update UI if there was a change
+            if (newCompletion || gameTime % 1 < 0.02) {
+                renderDailyChallenges();
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -4236,6 +4442,80 @@
         // ═══════════════════════════════════════════════════════════════════
         // WORLD GENERATION - Tel Aviv Beach Paradise
         // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════
+        // A1 JEWISH WORLD SYSTEM - Day/Night Cycle & Authentic Atmosphere
+        // ═══════════════════════════════════════════════════════════════════
+        let timeOfDay = 0; // 0-1 (0=noon, 0.5=sunset, 0.75=night, 1=noon)
+        let dayNightCycle = {
+            enabled: true,
+            cycleDuration: 480, // 8 minutes for full day/night cycle
+            currentPhase: 'day', // day, sunset, night, sunrise
+            shabbatMode: false,
+            candleLights: []
+        };
+
+        function updateDayNightCycle(dt) {
+            if (!dayNightCycle.enabled) return;
+
+            // Update time (0-1 cycle)
+            timeOfDay = (timeOfDay + dt / dayNightCycle.cycleDuration) % 1;
+
+            // Determine phase
+            if (timeOfDay < 0.35) dayNightCycle.currentPhase = 'day';
+            else if (timeOfDay < 0.5) dayNightCycle.currentPhase = 'sunset';
+            else if (timeOfDay < 0.75) dayNightCycle.currentPhase = 'night';
+            else dayNightCycle.currentPhase = 'sunrise';
+
+            // Check for Shabbat (Friday evening)
+            const now = new Date();
+            const isFriday = now.getDay() === 5;
+            const hour = now.getHours();
+            dayNightCycle.shabbatMode = isFriday && hour >= 17;
+        }
+
+        function getAmbientLight() {
+            if (timeOfDay < 0.35) return 1.0;
+            if (timeOfDay < 0.5) return 1.0 - (timeOfDay - 0.35) / 0.15 * 0.65;
+            if (timeOfDay < 0.75) return 0.35;
+            return 0.35 + (timeOfDay - 0.75) / 0.25 * 0.65;
+        }
+
+        function interpolateColor(c1, c2, t) {
+            const hex2rgb = (hex) => ({
+                r: parseInt(hex.slice(1, 3), 16),
+                g: parseInt(hex.slice(3, 5), 16),
+                b: parseInt(hex.slice(5, 7), 16)
+            });
+            const rgb1 = hex2rgb(c1);
+            const rgb2 = hex2rgb(c2);
+            const r = Math.round(rgb1.r + (rgb2.r - rgb1.r) * t);
+            const g = Math.round(rgb1.g + (rgb2.g - rgb1.g) * t);
+            const b = Math.round(rgb1.b + (rgb2.b - rgb1.b) * t);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function getSkyColors() {
+            if (dayNightCycle.currentPhase === 'day') {
+                return { top: '#4A90E2', bottom: '#87CEEB', ambient: 1.0 };
+            } else if (dayNightCycle.currentPhase === 'sunset') {
+                const t = (timeOfDay - 0.35) / 0.15;
+                return {
+                    top: interpolateColor('#4A90E2', '#8B4513', t),
+                    bottom: interpolateColor('#87CEEB', '#FFD700', t),
+                    ambient: 1.0 - t * 0.65
+                };
+            } else if (dayNightCycle.currentPhase === 'night') {
+                return { top: '#0a0a1a', bottom: '#1a1a2e', ambient: 0.35 };
+            } else {
+                const t = (timeOfDay - 0.75) / 0.25;
+                return {
+                    top: interpolateColor('#0a0a1a', '#4A90E2', t),
+                    bottom: interpolateColor('#1a1a2e', '#87CEEB', t),
+                    ambient: 0.35 + t * 0.65
+                };
+            }
+        }
+
         function generateWorld() {
             worldObjects = [];
             const ws = CFG.WORLD_SIZE;
@@ -5458,10 +5738,57 @@
         function drawBackground() {
             const time = Date.now() / 1000;
             const ws = CFG.WORLD_SIZE;
+            const skyColors = getSkyColors();
+            const ambient = getAmbientLight();
 
-            // ══════ CLEAN SAND BASE ══════
-            ctx.fillStyle = '#E8D4A8';
+            // ══════ SKY GRADIENT (Day/Night Cycle) ══════
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, skyColors.top);
+            skyGrad.addColorStop(0.6, skyColors.bottom);
+            skyGrad.addColorStop(1, '#E8D4A8');
+            ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, W, H);
+
+            // ══════ SUN / MOON ══════
+            const celestialY = H * 0.15 + Math.sin(timeOfDay * Math.PI * 2) * H * 0.1;
+            const celestialX = W * 0.2 + (timeOfDay * W * 0.6);
+
+            if (dayNightCycle.currentPhase === 'day' || dayNightCycle.currentPhase === 'sunset') {
+                // Sun
+                const sunGlow = ctx.createRadialGradient(celestialX, celestialY, 0, celestialX, celestialY, 60);
+                sunGlow.addColorStop(0, 'rgba(255, 255, 200, 0.8)');
+                sunGlow.addColorStop(0.5, 'rgba(255, 200, 50, 0.4)');
+                sunGlow.addColorStop(1, 'rgba(255, 200, 50, 0)');
+                ctx.fillStyle = sunGlow;
+                ctx.beginPath();
+                ctx.arc(celestialX, celestialY, 60, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(celestialX, celestialY, 25, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Moon
+                ctx.fillStyle = '#F0F0F0';
+                ctx.beginPath();
+                ctx.arc(celestialX, celestialY, 20, 0, Math.PI * 2);
+                ctx.fill();
+                // Moon glow
+                const moonGlow = ctx.createRadialGradient(celestialX, celestialY, 0, celestialX, celestialY, 40);
+                moonGlow.addColorStop(0, 'rgba(240, 240, 240, 0.3)');
+                moonGlow.addColorStop(1, 'rgba(240, 240, 240, 0)');
+                ctx.fillStyle = moonGlow;
+                ctx.beginPath();
+                ctx.arc(celestialX, celestialY, 40, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // ══════ CLEAN SAND BASE ( tinted by ambient light ) ══════
+            const sandBrightness = Math.floor(232 * ambient + 30);
+            const sandColor = `rgb(${sandBrightness}, ${Math.floor(212 * ambient + 20)}, ${Math.floor(168 * ambient + 15)})`;
+            ctx.fillStyle = sandColor;
+            ctx.fillRect(0, H * 0.4, W, H * 0.6);
 
             // ══════ OCEAN AT TOP OF WORLD (Fixed in world space) ══════
             // Ocean extends INTO the playable area so player can walk in shallow water
@@ -5906,6 +6233,10 @@
             document.getElementById('gameOverScreen').classList.add('hidden');
             document.getElementById('hud').style.display = 'flex';
 
+            // Initialize daily challenges display
+            generateDailyChallenges();
+            renderDailyChallenges();
+
             // Reset game over screen title (in case it was victory)
             document.getElementById('gameOverScreen').querySelector('.game-over-title').textContent = 'GAME OVER';
             document.getElementById('gameOverScreen').querySelector('.game-over-title').style.color = '#E63946';
@@ -6045,32 +6376,41 @@
             return false;
         }
 
-        function findSafeSpawnPosition(preferredX, preferredY, maxAttempts = 20) {
-            // First try the preferred position
-            if (!isPositionInBuilding(preferredX, preferredY, 40)) {
+        function isTooCloseToPlayer(x, y, minDist = 250) {
+            const distToPlayer = Math.hypot(x - player.x, y - player.y);
+            return distToPlayer < minDist;
+        }
+
+        function findSafeSpawnPosition(preferredX, preferredY, maxAttempts = 30) {
+            // CRITICAL FIX: Ensure minimum distance from player
+            const MIN_PLAYER_DISTANCE = 250;
+
+            // First try the preferred position (must be safe AND far from player)
+            if (!isPositionInBuilding(preferredX, preferredY, 40) &&
+                !isTooCloseToPlayer(preferredX, preferredY, MIN_PLAYER_DISTANCE)) {
                 return { x: preferredX, y: preferredY, safe: true };
             }
 
             // Try random positions around the preferred location
             for (let i = 0; i < maxAttempts; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 50 + Math.random() * 200; // Random distance 50-250
+                const dist = 100 + Math.random() * 300;
                 const testX = preferredX + Math.cos(angle) * dist;
                 const testY = preferredY + Math.sin(angle) * dist;
 
-                if (!isPositionInBuilding(testX, testY, 40)) {
+                if (!isPositionInBuilding(testX, testY, 40) &&
+                    !isTooCloseToPlayer(testX, testY, MIN_PLAYER_DISTANCE)) {
                     return { x: testX, y: testY, safe: true };
                 }
             }
 
-            // Last resort: spawn far away from buildings
+            // Last resort: spawn at edge of screen away from player
             const angle = Math.random() * Math.PI * 2;
-            const safeDist = Math.max(W, H) * 0.8;
-            return {
-                x: player.x + Math.cos(angle) * safeDist,
-                y: player.y + Math.sin(angle) * safeDist,
-                safe: false
-            };
+            const edgeDist = Math.max(W, H) * 0.6;
+            const edgeX = player.x + Math.cos(angle) * edgeDist;
+            const edgeY = player.y + Math.sin(angle) * edgeDist;
+
+            return { x: edgeX, y: edgeY, safe: false };
         }
 
         function spawnEnemy() {
@@ -6117,13 +6457,25 @@
 
                     // If stuck for more than 2 seconds, teleport to safety
                     if (e.stuckTime > 2.0) {
-                        const safePos = findSafeSpawnPosition(player.x, player.y);
+                        // CRITICAL FIX: Teleport to spawn zone away from player, not near them!
+                        const angle = Math.random() * Math.PI * 2;
+                        const spawnDist = Math.max(W, H) * 0.5 + 100;
+                        const spawnX = player.x + Math.cos(angle) * spawnDist;
+                        const spawnY = player.y + Math.sin(angle) * spawnDist;
+
+                        const safePos = findSafeSpawnPosition(spawnX, spawnY);
                         e.x = safePos.x;
                         e.y = safePos.y;
                         e.stuckTime = 0;
+                        e.lastPos.x = e.x;
+                        e.lastPos.y = e.y;
 
                         // Visual feedback for teleport
                         spawnParticles(e.x, e.y, '#4ECDC4', 8);
+                        floatingTexts.push({
+                            x: e.x, y: e.y - 30, text: '🔄 TELEPORT',
+                            life: 1.0, color: '#4ECDC4', size: 14
+                        });
                     }
                 } else {
                     // Enemy is moving normally
@@ -7032,6 +7384,9 @@
 
             gameTime += dt;
 
+            // ══════ UPDATE DAY/NIGHT CYCLE ══════
+            updateDayNightCycle(dt);
+
             // ══════ CHECK DAILY CHALLENGES ══════
             if (Math.floor(gameTime) !== Math.floor(gameTime - dt)) {
                 checkDailyChallenges();
@@ -7903,6 +8258,42 @@
             vig.addColorStop(1, 'rgba(0,0,0,0.45)');
             ctx.fillStyle = vig;
             ctx.fillRect(0, 0, W, H);
+
+            // ══════ DAY/NIGHT AMBIENT LIGHTING OVERLAY ══════
+            const ambient = getAmbientLight();
+            if (ambient < 0.95) {
+                // Night time darkness overlay
+                const darkness = 1 - ambient;
+                let overlayColor;
+                if (dayNightCycle.currentPhase === 'night') {
+                    overlayColor = `rgba(10, 10, 40, ${darkness * 0.6})`;
+                } else if (dayNightCycle.currentPhase === 'sunset') {
+                    overlayColor = `rgba(60, 30, 10, ${darkness * 0.4})`;
+                } else { // sunrise
+                    overlayColor = `rgba(40, 30, 60, ${darkness * 0.4})`;
+                }
+                ctx.fillStyle = overlayColor;
+                ctx.fillRect(0, 0, W, H);
+
+                // Shabbat candle glow during night
+                if (dayNightCycle.shabbatMode && dayNightCycle.currentPhase === 'night') {
+                    dayNightCycle.candleLights.forEach(candle => {
+                        const sx = candle.x - camera.x;
+                        const sy = candle.y - camera.y;
+                        if (sx > -100 && sx < W + 100 && sy > -100 && sy < H + 100) {
+                            const flicker = 0.8 + Math.sin(Date.now() / 200 + candle.flickerPhase) * 0.2;
+                            const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 80 * flicker);
+                            glow.addColorStop(0, `rgba(255, 200, 100, ${0.6 * flicker})`);
+                            glow.addColorStop(0.5, `rgba(255, 150, 50, ${0.3 * flicker})`);
+                            glow.addColorStop(1, 'rgba(255, 100, 0, 0)');
+                            ctx.fillStyle = glow;
+                            ctx.beginPath();
+                            ctx.arc(sx, sy, 80 * flicker, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    });
+                }
+            }
 
             // Low HP warning
             if (player && player.hp < player.maxHp * 0.3) {
