@@ -2202,10 +2202,61 @@
         ];
 
         // ═══════════════════════════════════════════════════════════════════
+        // OBJECT POOLING - Reuse objects to reduce garbage collection
+        // ═══════════════════════════════════════════════════════════════════
+        const objectPools = {
+            particles: [],
+            projectiles: [],
+            floatingTexts: [],
+            pickups: []
+        };
+
+        function getPooledParticle() {
+            return objectPools.particles.pop() || {};
+        }
+
+        function getPooledProjectile() {
+            return objectPools.projectiles.pop() || {};
+        }
+
+        function getPooledFloatingText() {
+            return objectPools.floatingTexts.pop() || {};
+        }
+
+        function getPooledPickup() {
+            return objectPools.pickups.pop() || {};
+        }
+
+        function returnPooledParticle(p) {
+            if (objectPools.particles.length < 100) {
+                objectPools.particles.push(p);
+            }
+        }
+
+        function returnPooledProjectile(p) {
+            if (objectPools.projectiles.length < 100) {
+                objectPools.projectiles.push(p);
+            }
+        }
+
+        function returnPooledFloatingText(t) {
+            if (objectPools.floatingTexts.length < 50) {
+                objectPools.floatingTexts.push(t);
+            }
+        }
+
+        function returnPooledPickup(p) {
+            if (objectPools.pickups.length < 100) {
+                objectPools.pickups.push(p);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
         // SPRITE PRE-RENDERING CACHE (Vampire Survivors technique!)
         // Pre-render each enemy type ONCE, then use drawImage() for 60fps
         // ═══════════════════════════════════════════════════════════════════
         const enemySpriteCache = {}; // type index -> { canvas, width, height }
+        const simpleEnemySpriteCache = {}; // Simplified version for high enemy counts
         let spriteCacheReady = false;
 
         function preRenderEnemySprites() {
@@ -2214,6 +2265,7 @@
                 const padding = 30;
                 const size = enemyType.size + padding * 2;
 
+                // Full quality version
                 const offscreen = document.createElement('canvas');
                 offscreen.width = size;
                 offscreen.height = size;
@@ -2277,6 +2329,33 @@
                 c.stroke();
 
                 enemySpriteCache[index] = { canvas: offscreen, width: size, height: size };
+
+                // Simple version for high enemy counts (solid colors, no gradients)
+                const simpleCanvas = document.createElement('canvas');
+                simpleCanvas.width = size;
+                simpleCanvas.height = size;
+                const sc = simpleCanvas.getContext('2d');
+                sc.translate(size / 2, size / 2);
+
+                // Simple body - solid color circle
+                sc.fillStyle = color;
+                sc.beginPath();
+                sc.arc(0, 0, s * 0.8, 0, Math.PI * 2);
+                sc.fill();
+
+                // Simple outline
+                sc.strokeStyle = darker;
+                sc.lineWidth = 1;
+                sc.stroke();
+
+                // Simple eyes (just dots)
+                sc.fillStyle = '#FFF';
+                sc.beginPath();
+                sc.arc(-s * 0.25, -s * 0.1, s * 0.12, 0, Math.PI * 2);
+                sc.arc(s * 0.25, -s * 0.1, s * 0.12, 0, Math.PI * 2);
+                sc.fill();
+
+                simpleEnemySpriteCache[index] = { canvas: simpleCanvas, width: size, height: size };
             });
             spriteCacheReady = true;
             console.log('🎮 Enemy sprites pre-rendered for 60fps performance!');
@@ -3032,41 +3111,55 @@
         // ═══════════════════════════════════════════════════════════════════
         // ENEMY DRAWING - Fully Animated Characters (No Emojis)
         // ═══════════════════════════════════════════════════════════════════
-        function drawEnemy(type, x, y, anim, flash) {
+        function drawEnemy(type, x, y, anim, flash, useSimple = false) {
             const e = ENEMY_TYPES[type];
             const sz = e.size;
             const bob = Math.sin(anim * 4) * 3;
 
-            // Full AAA rendering - always use detailed enemy sprites
-            const wobble = Math.sin(anim * 3) * 0.05;
-            const time = anim;
-
             ctx.save();
             ctx.translate(x, y);
 
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.beginPath();
-            ctx.ellipse(0, sz * 0.4, sz * 0.35, sz * 0.08, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Shadow (only in high quality mode)
+            if (!useSimple) {
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(0, sz * 0.4, sz * 0.35, sz * 0.08, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.translate(0, bob);
-            ctx.rotate(wobble);
 
-            const flashMult = 1;
+            // Use cached sprite for better performance
+            const cache = useSimple ? simpleEnemySpriteCache : enemySpriteCache;
+            if (cache[type]) {
+                const sprite = cache[type];
+                ctx.drawImage(sprite.canvas, -sprite.width / 2, -sprite.height / 2);
 
-            switch (type) {
-                case 0: drawPigEnemy(sz, time, flashMult); break;
-                case 1: drawShrimpEnemy(sz, time, flashMult); break;
-                case 2: drawCrabEnemy(sz, time, flashMult); break;
-                case 3: drawBaconEnemy(sz, time, flashMult); break;
-                case 4: drawLobsterEnemy(sz, time, flashMult); break;
-                case 5: drawBreadEnemy(sz, time, flashMult); break;
-                case 6: drawHamanEnemy(sz, time, flashMult); break;
-                case 7: drawPharaohEnemy(sz, time, flashMult); break;
-                case 8: drawGoliathEnemy(sz, time, flashMult); break;
-                case 9: drawGoldenCalfEnemy(sz, time, flashMult); break;
-                default: drawBasicEnemy(sz, e.color, flashMult);
+                // Flash effect overlay
+                if (flash > 0) {
+                    ctx.fillStyle = `rgba(255,255,255,${flash * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sz * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else {
+                // Fallback to procedural drawing
+                const wobble = Math.sin(anim * 3) * 0.05;
+                ctx.rotate(wobble);
+
+                switch (type) {
+                    case 0: drawPigEnemy(sz, anim, 1); break;
+                    case 1: drawShrimpEnemy(sz, anim, 1); break;
+                    case 2: drawCrabEnemy(sz, anim, 1); break;
+                    case 3: drawBaconEnemy(sz, anim, 1); break;
+                    case 4: drawLobsterEnemy(sz, anim, 1); break;
+                    case 5: drawBreadEnemy(sz, anim, 1); break;
+                    case 6: drawHamanEnemy(sz, anim, 1); break;
+                    case 7: drawPharaohEnemy(sz, anim, 1); break;
+                    case 8: drawGoliathEnemy(sz, anim, 1); break;
+                    case 9: drawGoldenCalfEnemy(sz, anim, 1); break;
+                    default: drawBasicEnemy(sz, e.color, 1);
+                }
             }
 
             ctx.restore();
@@ -5357,10 +5450,14 @@
             // Apply starting weapon
             applyStartingWeapon(player);
 
+            // Clear arrays and return objects to pools
             enemies = [];
+            projectiles.forEach(p => returnPooledProjectile(p));
             projectiles = [];
             pickups = [];
+            particles.forEach(p => returnPooledParticle(p));
             particles = [];
+            floatingTexts.forEach(t => returnPooledFloatingText(t));
             floatingTexts = [];
             if (!player.weapons.dreidel) dreidels = [];
             timers = { spawn: 0, fire: 0, hummus: 0, shofar: 0 };
@@ -6142,18 +6239,18 @@
                 if (player.projCount > 1) {
                     angle += ((i - (player.projCount - 1) / 2) * spread / Math.max(1, player.projCount - 1));
                 }
-                projectiles.push({
-                    x: player.x,
-                    y: player.y,
-                    startX: player.x, // Track origin for range calculation
-                    startY: player.y,
-                    maxRange: player.range, // Store max range at creation time
-                    angle: angle,
-                    damage: player.damage,
-                    pierce: player.pierce,
-                    rot: 0,
-                    hits: new Set()
-                });
+                const p = getPooledProjectile();
+                p.x = player.x;
+                p.y = player.y;
+                p.startX = player.x;
+                p.startY = player.y;
+                p.maxRange = player.range;
+                p.angle = angle;
+                p.damage = player.damage;
+                p.pierce = player.pierce;
+                p.rot = 0;
+                p.hits = new Set();
+                projectiles.push(p);
             }
             // Track projectiles fired
             sessionStats.projectilesFired += player.projCount;
@@ -6165,32 +6262,33 @@
             const toSpawn = Math.min(count, available);
 
             for (let i = 0; i < toSpawn; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 200,
-                    vy: (Math.random() - 0.5) * 200,
-                    size: 3 + Math.random() * 4,
-                    color: color,
-                    life: 0.5 + Math.random() * 0.3
-                });
+                const p = getPooledParticle();
+                p.x = x;
+                p.y = y;
+                p.vx = (Math.random() - 0.5) * 200;
+                p.vy = (Math.random() - 0.5) * 200;
+                p.size = 3 + Math.random() * 4;
+                p.color = color;
+                p.life = 0.5 + Math.random() * 0.3;
+                particles.push(p);
             }
         }
 
         function spawnFloatingText(x, y, text, color = '#FFD700') {
             // Cap floating texts for performance
             if (floatingTexts.length >= CFG.MAX_FLOATING_TEXTS) {
-                // Remove oldest
-                floatingTexts.shift();
+                // Return oldest to pool
+                const old = floatingTexts.shift();
+                returnPooledFloatingText(old);
             }
-            floatingTexts.push({
-                x: x,
-                y: y,
-                text: text,
-                color: color,
-                life: 1,
-                vy: -80
-            });
+            const t = getPooledFloatingText();
+            t.x = x;
+            t.y = y;
+            t.text = text;
+            t.color = color;
+            t.life = 1;
+            t.vy = -80;
+            floatingTexts.push(t);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -6640,7 +6738,9 @@
                 }
             });
 
-            // Remove dead projectiles
+            // Remove dead projectiles and return to pool
+            const deadProjectiles = projectiles.filter(p => p.damage <= 0);
+            deadProjectiles.forEach(p => returnPooledProjectile(p));
             projectiles = projectiles.filter(p => p.damage > 0);
 
             // ══════ ENEMY DEATH ══════
@@ -6778,6 +6878,9 @@
                 p.vx *= 0.95;
                 p.vy *= 0.95;
             });
+            // Return dead particles to pool
+            const deadParticles = particles.filter(p => p.life <= 0);
+            deadParticles.forEach(p => returnPooledParticle(p));
             particles = particles.filter(p => p.life > 0);
 
             // ══════ UPDATE FLOATING TEXTS ══════
@@ -6786,6 +6889,9 @@
                 t.vy *= 0.95;
                 t.life -= dt;
             });
+            // Return dead floating texts to pool
+            const deadTexts = floatingTexts.filter(t => t.life <= 0);
+            deadTexts.forEach(t => returnPooledFloatingText(t));
             floatingTexts = floatingTexts.filter(t => t.life > 0);
 
             // ══════ CAMERA ══════
@@ -6889,17 +6995,23 @@
             });
             ctx.globalAlpha = 1;
 
-            // Enemies
+            // Enemies - with LOD (Level of Detail) rendering
+            const enemyCount = enemies.length;
+            const useSimpleSprites = enemyCount > CFG.LOW_DETAIL_THRESHOLD;
+            const skipHPBars = enemyCount > 80;
+            const skipShadows = enemyCount > 100;
+
             enemies.forEach(e => {
                 const sx = e.x - camera.x;
                 const sy = e.y - camera.y;
                 if (sx < -100 || sx > W + 100 || sy < -100 || sy > H + 100) return;
 
-                drawEnemy(e.type, sx, sy, e.anim, e.flash);
+                // Use simple sprites when many enemies
+                drawEnemy(e.type, sx, sy, e.anim, e.flash, useSimpleSprites);
 
-                // HP bar
-                const type = ENEMY_TYPES[e.type];
-                if (e.hp < e.maxHp) {
+                // HP bar (skip when too many enemies)
+                if (!skipHPBars && e.hp < e.maxHp) {
+                    const type = ENEMY_TYPES[e.type];
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
                     ctx.fillRect(sx - type.size / 2, sy - type.size / 2 - 10, type.size, 5);
                     ctx.fillStyle = '#E63946';
@@ -7008,7 +7120,32 @@
                 ctx.globalAlpha = 1;
             }
 
+            // FPS Counter (debug)
+            if (fps < 55) {
+                ctx.fillStyle = '#FF0000';
+                ctx.font = 'bold 16px monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText(`FPS: ${fps} | Enemies: ${enemies.length}`, 10, H - 10);
+            }
+
             ctx.restore();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PERFORMANCE MONITORING
+        // ═══════════════════════════════════════════════════════════════════
+        let fps = 60;
+        let frameCount = 0;
+        let lastFpsTime = 0;
+        let avgFrameTime = 0;
+
+        function updateFPS(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastFpsTime = timestamp;
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -7019,6 +7156,7 @@
             const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
             lastTime = timestamp;
 
+            updateFPS(timestamp);
             update(dt);
             draw();
 
