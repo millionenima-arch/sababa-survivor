@@ -8173,12 +8173,9 @@
 
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
-            // ESC to toggle pause during gameplay
-            if (e.code === 'Escape' && running && !document.getElementById('levelUpScreen').classList.contains('hidden') === false) {
-                // Only allow pause if level up screen is not showing
-                if (document.getElementById('levelUpScreen').classList.contains('hidden')) {
-                    togglePause();
-                }
+            // ESC to toggle pause during gameplay (only when level up screen not showing)
+            if (e.code === 'Escape' && running && document.getElementById('levelUpScreen').classList.contains('hidden')) {
+                togglePause();
             }
         });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
