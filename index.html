@@ -6199,14 +6199,19 @@
             let canMoveY = true;
 
             for (const b of buildings) {
+                // Isometric offset - buildings visually extend upward
+                const isoOffset = b.height * 0.5;
+                const collisionTop = b.y - isoOffset;
+                const collisionBottom = b.y + b.depth;
+
                 // Check X movement
                 if (newX + playerRadius > b.x && newX - playerRadius < b.x + b.width &&
-                    player.y + playerRadius > b.y && player.y - playerRadius < b.y + b.depth) {
+                    player.y + playerRadius > collisionTop && player.y - playerRadius < collisionBottom) {
                     canMoveX = false;
                 }
                 // Check Y movement
                 if (player.x + playerRadius > b.x && player.x - playerRadius < b.x + b.width &&
-                    newY + playerRadius > b.y && newY - playerRadius < b.y + b.depth) {
+                    newY + playerRadius > collisionTop && newY - playerRadius < collisionBottom) {
                     canMoveY = false;
                 }
             }
@@ -6408,14 +6413,19 @@
                     let canMoveY = true;
 
                     for (const b of nearbyBuildings) {
+                        // Isometric offset - buildings visually extend upward
+                        const isoOffset = b.height * 0.5;
+                        const collisionTop = b.y - isoOffset;
+                        const collisionBottom = b.y + b.depth;
+
                         // X movement collision
                         if (newX + enemyRadius > b.x && newX - enemyRadius < b.x + b.width &&
-                            e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
+                            e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
                             canMoveX = false;
                         }
                         // Y movement collision
                         if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                            newY + enemyRadius > b.y && newY - enemyRadius < b.y + b.depth) {
+                            newY + enemyRadius > collisionTop && newY - enemyRadius < collisionBottom) {
                             canMoveY = false;
                         }
                     }
@@ -6436,12 +6446,16 @@
                         const perpNewY = e.y + perpY;
 
                         for (const b of nearbyBuildings) {
+                            const isoOffset = b.height * 0.5;
+                            const collisionTop = b.y - isoOffset;
+                            const collisionBottom = b.y + b.depth;
+
                             if (perpNewX + enemyRadius > b.x && perpNewX - enemyRadius < b.x + b.width &&
-                                e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
+                                e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
                                 canPerpX = false;
                             }
                             if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                                perpNewY + enemyRadius > b.y && perpNewY - enemyRadius < b.y + b.depth) {
+                                perpNewY + enemyRadius > collisionTop && perpNewY - enemyRadius < collisionBottom) {
                                 canPerpY = false;
                             }
                         }
@@ -6458,12 +6472,16 @@
                 let canKbY = true;
 
                 for (const b of nearbyBuildings) {
+                    const isoOffset = b.height * 0.5;
+                    const collisionTop = b.y - isoOffset;
+                    const collisionBottom = b.y + b.depth;
+
                     if (e.x + kbX + enemyRadius > b.x && e.x + kbX - enemyRadius < b.x + b.width &&
-                        e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
+                        e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
                         canKbX = false;
                     }
                     if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                        e.y + kbY + enemyRadius > b.y && e.y + kbY - enemyRadius < b.y + b.depth) {
+                        e.y + kbY + enemyRadius > collisionTop && e.y + kbY - enemyRadius < collisionBottom) {
                         canKbY = false;
                     }
                 }
