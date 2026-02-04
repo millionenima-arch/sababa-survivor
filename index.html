@@ -8169,13 +8169,13 @@
 
         function returnToMenu() {
             // Stop the game and return to main menu
-            running = false;
+            gameState = 'menu';
             isPaused = false;
             document.getElementById('pauseScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
-            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
             canvas.classList.add('hidden');
-            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('hud').style.display = 'none';
             AudioSystem.stopMusic();
             AudioSystem.startMusic(280); // Menu tempo
         }
