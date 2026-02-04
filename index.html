@@ -1226,6 +1226,48 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        /* ══════ A1 COMBO DISPLAY ══════ */
+        .combo-display {
+            animation: combo-pulse 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .combo-display.show {
+            display: flex !important;
+            animation: combo-pop 0.3s ease-out;
+        }
+
+        @keyframes combo-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes combo-pop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         /* ══════ RESPONSIVE DESIGN ══════ */
         /* Make all screens scrollable and fit viewport */
         .screen {
@@ -1577,6 +1619,11 @@
         </div>
         <div class="hud-right">
             <div class="level-badge">LEVEL <span id="lvlVal">1</span></div>
+            <!-- A1 Combo Display -->
+            <div class="stat-item combo-display" id="comboDisplay"
+                style="display:none; background: linear-gradient(135deg, #FF6B35, #FF8C42);">
+                <span style="opacity:0.9">🔥</span> <span id="comboVal" class="hud-value">x1</span>
+            </div>
             <div class="stat-item"><span style="opacity:0.6">⏱</span> <span id="timeVal" class="hud-value">0:00</span>
             </div>
             <div class="stat-item"><span style="opacity:0.6">💀</span> <span id="killVal" class="hud-value">0</span>
@@ -1769,7 +1816,13 @@
             MAX_PICKUPS: 400,           // Reduced from 500
             GRID_CELL_SIZE: 150,        // Spatial grid cell size
             LOW_DETAIL_THRESHOLD: 50,   // Switch to simple rendering above this enemy count (was 80)
-            AUDIO_KILL_COOLDOWN: 50     // Minimum ms between kill sounds
+            AUDIO_KILL_COOLDOWN: 50,    // Minimum ms between kill sounds
+            // A1 Performance enhancements
+            FRAME_SKIP_DISTANCE: 400,   // Distance beyond which enemies update every other frame
+            LOD_DISTANCE: 300,          // Distance for switching to low-detail rendering
+            VIEWPORT_MARGIN: 150,       // Margin for viewport culling
+            OFFSCREEN_CACHE_SIZE: 4096, // Size of offscreen world cache
+            DT_SMOOTHING: 0.8           // Delta time smoothing factor (0-1)
         };
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1903,17 +1956,40 @@
             // Freygish scale (Jewish minor scale) - D E♭ F# G A B♭ C D
             freygishScale: [293.66, 311.13, 369.99, 392.00, 440.00, 466.16, 523.25, 587.33],
 
-            // Melody patterns for klezmer feel
+            // Extended klezmer melody patterns - authentic Jewish folk music
             melodyPatterns: [
+                // Classic freygish patterns
                 [0, 2, 3, 4, 3, 2, 0, 0],
                 [4, 3, 2, 3, 4, 4, 4, 3],
                 [0, 0, 3, 3, 4, 4, 3, 2],
                 [5, 4, 3, 4, 5, 5, 4, 3],
                 [2, 3, 4, 5, 4, 3, 2, 0],
-                [3, 2, 0, 2, 3, 4, 3, 2]
+                [3, 2, 0, 2, 3, 4, 3, 2],
+                // Extended patterns for variety
+                [0, 3, 2, 0, 4, 3, 2, 1],
+                [2, 4, 5, 4, 3, 2, 3, 4],
+                [0, 2, 4, 3, 2, 0, 3, 2],
+                [4, 5, 6, 5, 4, 3, 2, 0],
+                [3, 4, 3, 2, 0, 2, 3, 4],
+                [5, 3, 4, 2, 3, 1, 2, 0]
             ],
+
+            // Music intensity levels based on gameplay
+            intensityLevel: 0, // 0: calm, 1: medium, 2: intense
+            baseTempo: 280,
+
             currentPattern: 0,
             patternNote: 0,
+
+            // Hebrew voice lines for actions
+            hebrewPhrases: {
+                start: ['Yalla!', 'Let\'s go!', 'Sababa!', 'Chai!'],
+                levelUp: ['Yasher koach!', 'All right!', 'Tov me\'od!', 'Achla!'],
+                kill: ['Take that!', 'Gotcha!', 'Boom!', 'Yalla!'],
+                damage: ['Oy!', 'Ahh!', 'Watch it!', 'Hey!'],
+                combo: ['Woah!', 'Amazing!', 'Metzuyan!', 'Gadol!'],
+                boss: ['Uh oh!', 'Watch out!', 'Big one!', 'Yalla!']
+            },
 
             init() {
                 if (this.ctx) return;
@@ -2543,6 +2619,100 @@
         ];
 
         // ═══════════════════════════════════════════════════════════════════
+        // A1 DAILY CHALLENGES - Addictive return mechanic
+        // ═══════════════════════════════════════════════════════════════════
+        const DAILY_CHALLENGES_POOL = [
+            { id: 'daily_kills_50', name: 'Daily Slayer', desc: 'Kill 50 enemies in one run', target: 50, stat: 'sessionKills', reward: 100 },
+            { id: 'daily_kills_100', name: 'Daily Warrior', desc: 'Kill 100 enemies in one run', target: 100, stat: 'sessionKills', reward: 200 },
+            { id: 'daily_kills_pigs', name: 'Pig Hunter', desc: 'Kill 20 Pigs', target: 20, stat: 'killsPig', reward: 150 },
+            { id: 'daily_kills_bosses', name: 'Boss Slayer', desc: 'Kill 5 boss-tier enemies', target: 5, stat: 'bossKills', reward: 300 },
+            { id: 'daily_survive_3min', name: 'Survivor', desc: 'Survive 3 minutes', target: 180, stat: 'sessionTime', reward: 150 },
+            { id: 'daily_survive_5min', name: 'Endurance', desc: 'Survive 5 minutes', target: 300, stat: 'sessionTime', reward: 250 },
+            { id: 'daily_level_10', name: 'Level Master', desc: 'Reach level 10', target: 10, stat: 'sessionLevel', reward: 200 },
+            { id: 'daily_level_15', name: 'Level Legend', desc: 'Reach level 15', target: 15, stat: 'sessionLevel', reward: 350 },
+            { id: 'daily_combo_20', name: 'Combo Starter', desc: 'Get a 20x combo', target: 20, stat: 'sessionBestCombo', reward: 200 },
+            { id: 'daily_combo_50', name: 'Combo Master', desc: 'Get a 50x combo', target: 50, stat: 'sessionBestCombo', reward: 400 },
+            { id: 'daily_xp_50', name: 'Shekel Collector', desc: 'Collect 50 shekels', target: 50, stat: 'xpCollected', reward: 100 },
+            { id: 'daily_xp_200', name: 'Shekel Hoarder', desc: 'Collect 200 shekels', target: 200, stat: 'xpCollected', reward: 300 },
+            { id: 'daily_no_damage_60', name: 'Untouchable', desc: 'Survive 60s without damage', target: 60, stat: 'noDamageTime', reward: 250 },
+            { id: 'daily_crits_20', name: 'Critical Eye', desc: 'Land 20 critical hits', target: 20, stat: 'criticalHits', reward: 150 },
+            { id: 'daily_upgrades_5', name: 'Power Hungry', desc: 'Choose 5 upgrades', target: 5, stat: 'upgradesTaken', reward: 150 },
+        ];
+
+        let dailyChallenges = {
+            date: null,
+            challenges: [],
+            completed: [],
+            claimed: []
+        };
+
+        function generateDailyChallenges() {
+            const today = new Date().toDateString();
+
+            // Check if we need new challenges
+            if (dailyChallenges.date !== today) {
+                dailyChallenges.date = today;
+                dailyChallenges.completed = [];
+                dailyChallenges.claimed = [];
+
+                // Randomly select 3 challenges
+                const shuffled = shuffle([...DAILY_CHALLENGES_POOL]);
+                dailyChallenges.challenges = shuffled.slice(0, 3);
+            }
+
+            return dailyChallenges;
+        }
+
+        function checkDailyChallenges() {
+            const challenges = generateDailyChallenges();
+
+            challenges.challenges.forEach((challenge, index) => {
+                if (challenges.completed.includes(challenge.id)) return;
+
+                let currentValue = 0;
+                switch (challenge.stat) {
+                    case 'sessionKills': currentValue = kills; break;
+                    case 'sessionTime': currentValue = gameTime; break;
+                    case 'sessionLevel': currentValue = player ? player.level : 0; break;
+                    case 'sessionBestCombo': currentValue = comboSystem.bestCombo; break;
+                    case 'xpCollected': currentValue = sessionStats.xpGemsCollected || 0; break;
+                    case 'noDamageTime': currentValue = noDamageTime; break;
+                    case 'criticalHits': currentValue = sessionStats.criticalHits || 0; break;
+                    case 'upgradesTaken': currentValue = sessionStats.upgrades || 0; break;
+                    case 'killsPig': currentValue = sessionStats.killsByType ? sessionStats.killsByType['Pig'] || 0 : 0; break;
+                    case 'bossKills': currentValue = sessionStats.bossKills || 0; break;
+                }
+
+                if (currentValue >= challenge.target) {
+                    challenges.completed.push(challenge.id);
+
+                    // Show completion notification
+                    floatingTexts.push({
+                        x: player.x,
+                        y: player.y - 120,
+                        text: `📅 DAILY COMPLETE: ${challenge.name}`,
+                        color: '#4ECDC4',
+                        size: 22,
+                        life: 3,
+                        vy: -20
+                    });
+
+                    // Award XP
+                    player.xp += challenge.reward * player.xpMult;
+                    floatingTexts.push({
+                        x: player.x,
+                        y: player.y - 150,
+                        text: `+${challenge.reward} DAILY BONUS`,
+                        color: '#FFD700',
+                        size: 18,
+                        life: 2,
+                        vy: -15
+                    });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
         // META PROGRESSION (Saved between games)
         // ═══════════════════════════════════════════════════════════════════
         let metaProgress = {
@@ -2611,6 +2781,41 @@
         const BOSS_SPAWN_TIME = 600; // 10 minutes
         let updateFrame = 0; // For staggered enemy updates
         let highPerfMode = false; // True when many enemies - uses solid colors instead of gradients
+
+        // ═══════════════════════════════════════════════════════════════════
+        // A1 PERFORMANCE SYSTEMS
+        // ═══════════════════════════════════════════════════════════════════
+        // Offscreen canvas for static world rendering
+        let worldCacheCanvas = null;
+        let worldCacheCtx = null;
+        let worldCacheValid = false;
+        let lastCacheCameraX = 0, lastCacheCameraY = 0;
+        const CACHE_REGENERATE_DISTANCE = 200; // Regenerate cache when camera moves this far
+
+        // Delta time smoothing
+        let smoothedDT = 0.016;
+        let lastFrameTime = 0;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // COMBO SYSTEM - Addictive gameplay mechanic
+        // ═══════════════════════════════════════════════════════════════════
+        let comboSystem = {
+            count: 0,
+            multiplier: 1,
+            timer: 0,
+            maxTime: 3.0, // Seconds to maintain combo
+            lastKillTime: 0,
+            bestCombo: 0,
+            totalComboKills: 0
+        };
+
+        // Mini-boss system
+        let miniBossSystem = {
+            lastSpawnTime: 0,
+            spawnInterval: 150, // 2.5 minutes
+            active: false,
+            current: null
+        };
 
         // ═══════════════════════════════════════════════════════════════════
         // PLAYER
@@ -4240,6 +4445,63 @@
                 });
             }
 
+            // ══════ MATKOT (Israeli beach paddleball) ══════
+            for (let i = 0; i < 8; i++) {
+                const pos = findValidPosition(60);
+                worldObjects.push({
+                    type: 'matkot',
+                    x: pos.x,
+                    y: pos.y,
+                    rot: Math.random() * Math.PI * 2
+                });
+            }
+
+            // ══════ ISRAELI FLAGS ══════
+            for (let i = 0; i < 6; i++) {
+                const pos = findValidPosition(40);
+                worldObjects.push({
+                    type: 'israelFlag',
+                    x: pos.x,
+                    y: pos.y,
+                    waving: Math.random() * Math.PI * 2
+                });
+            }
+
+            // ══════ SUNBATHERS ══════
+            for (let i = 0; i < 10; i++) {
+                const pos = findValidPosition(35);
+                worldObjects.push({
+                    type: 'sunbather',
+                    x: pos.x,
+                    y: pos.y,
+                    skinTone: ['#F5DEB3', '#D4A574', '#E8C4A0', '#C4956A'][Math.floor(Math.random() * 4)],
+                    towelColor: ['#FF6B6B', '#4ECDC4', '#FFD93D', '#FF6B9D', '#95E1D3'][Math.floor(Math.random() * 5)]
+                });
+            }
+
+            // ══════ HAMAS PIECES (decorative) ══════
+            for (let i = 0; i < 5; i++) {
+                const pos = findValidPosition(25);
+                worldObjects.push({
+                    type: 'hamsa',
+                    x: pos.x,
+                    y: pos.y,
+                    size: 20 + Math.random() * 15
+                });
+            }
+
+            // ══════ STAR OF DAVID DECORATIONS ══════
+            for (let i = 0; i < 7; i++) {
+                const pos = findValidPosition(20);
+                worldObjects.push({
+                    type: 'starDecoration',
+                    x: pos.x,
+                    y: pos.y,
+                    size: 15 + Math.random() * 10,
+                    color: ['#FFD700', '#4ECDC4', '#FF6B6B'][Math.floor(Math.random() * 3)]
+                });
+            }
+
             // ══════ BUILDINGS (At bottom of map - Tel Aviv Bauhaus "White City") ══════
             buildings = [];
             const streetWidth = 150; // Wide streets for gameplay
@@ -5016,6 +5278,175 @@
                         ctx.fill();
                     }
                     break;
+
+                // ══════ A1 JEWISH WORLD IMMERSION - NEW DECORATIONS ══════
+                case 'matkot':
+                    // Israeli beach paddleball - two paddles and ball
+                    const wave = Math.sin(time * 3 + obj.rot) * 5;
+                    // Paddle 1
+                    ctx.fillStyle = '#FF6B35';
+                    ctx.fillRect(-25, -15 + wave, 12, 30);
+                    ctx.fillStyle = '#4169E1';
+                    ctx.fillRect(-25, -20 + wave, 12, 8);
+                    // Paddle 2
+                    ctx.fillStyle = '#4ECDC4';
+                    ctx.fillRect(13, 5 - wave, 12, 30);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(13, 30 - wave, 12, 8);
+                    // Ball between them
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(wave * 0.5, 0, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 25, 30, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'israelFlag':
+                    // Israeli flag waving
+                    const israelFlagWave = Math.sin(time * 2 + obj.waving) * 3;
+                    // Flag pole
+                    ctx.strokeStyle = '#8B4513';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 20);
+                    ctx.lineTo(0, -30);
+                    ctx.stroke();
+                    // Flag cloth (with wave animation)
+                    ctx.fillStyle = '#FFF';
+                    ctx.fillRect(2, -28, 40, 24);
+                    // Blue stripes
+                    ctx.fillStyle = '#0038b8';
+                    ctx.fillRect(2, -28, 40 + israelFlagWave, 4);
+                    ctx.fillRect(2, -8, 40 + israelFlagWave, 4);
+                    // Star of David
+                    ctx.strokeStyle = '#0038b8';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(22, -20);
+                    ctx.lineTo(26, -12);
+                    ctx.lineTo(18, -12);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(22, -12);
+                    ctx.lineTo(18, -20);
+                    ctx.lineTo(26, -20);
+                    ctx.closePath();
+                    ctx.stroke();
+                    break;
+
+                case 'sunbather':
+                    // Person lying on towel
+                    // Towel
+                    ctx.fillStyle = obj.towelColor;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 40, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    // Body (simple oval)
+                    ctx.fillStyle = obj.skinTone;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 25, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Sunglasses
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.ellipse(-3, 0, 3, 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(3, 0, 3, 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 15, 35, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'hamsa':
+                    // Hamsa hand decoration
+                    const hamsaS = obj.size;
+                    ctx.fillStyle = '#4ECDC4';
+                    ctx.beginPath();
+                    // Palm
+                    ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Fingers (3)
+                    for (let f = -1; f <= 1; f++) {
+                        const fx = f * hamsaS * 0.3;
+                        ctx.fillStyle = '#4ECDC4';
+                        ctx.beginPath();
+                        ctx.ellipse(fx, -hamsaS * 0.6, hamsaS * 0.15, hamsaS * 0.4, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    // Eye in center
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hamsaS * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hamsaS * 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Border
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+
+                case 'starDecoration':
+                    // Star of David decoration
+                    const starS = obj.size;
+                    ctx.save();
+                    ctx.rotate(time * 0.5);
+                    ctx.strokeStyle = obj.color;
+                    ctx.lineWidth = 3;
+                    // Upward triangle
+                    ctx.beginPath();
+                    for (let i = 0; i < 3; i++) {
+                        const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
+                        const x = Math.cos(a) * starS;
+                        const y = Math.sin(a) * starS;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    // Downward triangle
+                    ctx.beginPath();
+                    for (let i = 0; i < 3; i++) {
+                        const a = (i / 3) * Math.PI * 2 + Math.PI / 2;
+                        const x = Math.cos(a) * starS;
+                        const y = Math.sin(a) * starS;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.restore();
+                    // Glow effect
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = obj.color;
+                    ctx.fillStyle = obj.color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, starS * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.shadowBlur = 0;
+                    break;
             }
 
             ctx.restore();
@@ -5594,6 +6025,54 @@
             document.getElementById('levelUpScreen').classList.remove('hidden');
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // SAFE SPAWN SYSTEM - Prevent enemies from spawning in buildings
+        // ═══════════════════════════════════════════════════════════════════
+        function isPositionInBuilding(x, y, radius = 30) {
+            // Use spatial grid for efficient lookup
+            const nearbyBuildings = buildingGrid.getNearby(x, y, radius + 200);
+
+            for (const b of nearbyBuildings) {
+                const isoOffset = b.height * 0.5;
+                const collisionTop = b.y - isoOffset;
+                const collisionBottom = b.y + b.depth;
+
+                if (x + radius > b.x && x - radius < b.x + b.width &&
+                    y + radius > collisionTop && y - radius < collisionBottom) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function findSafeSpawnPosition(preferredX, preferredY, maxAttempts = 20) {
+            // First try the preferred position
+            if (!isPositionInBuilding(preferredX, preferredY, 40)) {
+                return { x: preferredX, y: preferredY, safe: true };
+            }
+
+            // Try random positions around the preferred location
+            for (let i = 0; i < maxAttempts; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 50 + Math.random() * 200; // Random distance 50-250
+                const testX = preferredX + Math.cos(angle) * dist;
+                const testY = preferredY + Math.sin(angle) * dist;
+
+                if (!isPositionInBuilding(testX, testY, 40)) {
+                    return { x: testX, y: testY, safe: true };
+                }
+            }
+
+            // Last resort: spawn far away from buildings
+            const angle = Math.random() * Math.PI * 2;
+            const safeDist = Math.max(W, H) * 0.8;
+            return {
+                x: player.x + Math.cos(angle) * safeDist,
+                y: player.y + Math.sin(angle) * safeDist,
+                safe: false
+            };
+        }
+
         function spawnEnemy() {
             // Limit max enemies for performance
             if (enemies.length >= CFG.MAX_ENEMIES) return;
@@ -5603,15 +6082,59 @@
             const angle = Math.random() * Math.PI * 2;
             const dist = Math.max(W, H) / 2 + 150;
 
+            // Calculate preferred spawn position
+            const preferredX = player.x + Math.cos(angle) * dist;
+            const preferredY = player.y + Math.sin(angle) * dist;
+
+            // Find safe position that avoids buildings
+            const safePos = findSafeSpawnPosition(preferredX, preferredY);
+
             enemies.push({
                 type: type,
-                x: player.x + Math.cos(angle) * dist,
-                y: player.y + Math.sin(angle) * dist,
+                x: safePos.x,
+                y: safePos.y,
                 hp: ENEMY_TYPES[type].hp * (1 + gameTime / 100),
                 maxHp: ENEMY_TYPES[type].hp * (1 + gameTime / 100),
                 flash: 0,
                 anim: Math.random() * Math.PI * 2,
-                knockback: { x: 0, y: 0 }
+                knockback: { x: 0, y: 0 },
+                stuckTime: 0, // Track if enemy gets stuck
+                lastPos: { x: safePos.x, y: safePos.y } // For stuck detection
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // STUCK ENEMY DETECTION & TELEPORT SYSTEM
+        // ═══════════════════════════════════════════════════════════════════
+        function updateStuckEnemies(dt) {
+            enemies.forEach(e => {
+                // Check if enemy moved significantly
+                const moveDist = Math.hypot(e.x - e.lastPos.x, e.y - e.lastPos.y);
+
+                if (moveDist < 1) {
+                    // Enemy barely moved, might be stuck
+                    e.stuckTime += dt;
+
+                    // If stuck for more than 2 seconds, teleport to safety
+                    if (e.stuckTime > 2.0) {
+                        const safePos = findSafeSpawnPosition(player.x, player.y);
+                        e.x = safePos.x;
+                        e.y = safePos.y;
+                        e.stuckTime = 0;
+
+                        // Visual feedback for teleport
+                        spawnParticles(e.x, e.y, '#4ECDC4', 8);
+                    }
+                } else {
+                    // Enemy is moving normally
+                    e.stuckTime = Math.max(0, e.stuckTime - dt * 0.5);
+                }
+
+                // Update last position (only every 0.5 seconds to avoid jitter detection)
+                if (Math.floor(gameTime * 2) !== Math.floor((gameTime - dt) * 2)) {
+                    e.lastPos.x = e.x;
+                    e.lastPos.y = e.y;
+                }
             });
         }
 
@@ -6256,6 +6779,204 @@
             sessionStats.projectilesFired += player.projCount;
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // A1 COMBO SYSTEM - Addictive gameplay mechanic
+        // ═══════════════════════════════════════════════════════════════════
+        function updateComboSystem(dt) {
+            // Decay combo timer
+            if (comboSystem.count > 0) {
+                comboSystem.timer -= dt;
+
+                if (comboSystem.timer <= 0) {
+                    // Combo broken - award bonus if it was good
+                    if (comboSystem.count >= 10) {
+                        floatingTexts.push({
+                            x: player.x,
+                            y: player.y - 60,
+                            text: `🔥 COMBO x${comboSystem.count} COMPLETE! 🔥`,
+                            color: '#FF6B35',
+                            size: 24,
+                            life: 2,
+                            vy: -25
+                        });
+
+                        // Bonus XP for high combos
+                        const bonusXP = Math.floor(comboSystem.count * 2 * player.xpMult);
+                        player.xp += bonusXP;
+                        floatingTexts.push({
+                            x: player.x,
+                            y: player.y - 90,
+                            text: `+${bonusXP} COMBO BONUS`,
+                            color: '#FFD700',
+                            size: 18,
+                            life: 1.5,
+                            vy: -20
+                        });
+                    }
+
+                    // Reset combo
+                    comboSystem.count = 0;
+                    comboSystem.multiplier = 1;
+                }
+            }
+        }
+
+        function addComboKill() {
+            const now = gameTime;
+
+            // Check if within combo window
+            if (now - comboSystem.lastKillTime < comboSystem.maxTime) {
+                comboSystem.count++;
+                comboSystem.timer = comboSystem.maxTime;
+
+                // Calculate multiplier (capped at 5x)
+                comboSystem.multiplier = Math.min(5, 1 + Math.floor(comboSystem.count / 5) * 0.5);
+
+                // Track best combo
+                comboSystem.bestCombo = Math.max(comboSystem.bestCombo, comboSystem.count);
+                comboSystem.totalComboKills++;
+
+                // Visual feedback for milestone combos
+                if (comboSystem.count % 10 === 0) {
+                    floatingTexts.push({
+                        x: player.x + (Math.random() - 0.5) * 100,
+                        y: player.y - 80,
+                        text: `🔥 ${comboSystem.count} COMBO! 🔥`,
+                        color: comboSystem.count >= 50 ? '#FFD700' : '#FF6B35',
+                        size: 28,
+                        life: 1.5,
+                        vy: -30
+                    });
+
+                    // Screen shake for big combos
+                    if (comboSystem.count >= 20) {
+                        camera.shake = Math.min(10, comboSystem.count / 5);
+                    }
+                }
+            } else {
+                // Start new combo
+                comboSystem.count = 1;
+                comboSystem.timer = comboSystem.maxTime;
+                comboSystem.multiplier = 1;
+            }
+
+            comboSystem.lastKillTime = now;
+        }
+
+        function getComboMultiplier() {
+            return comboSystem.multiplier;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // A1 OFFSCREEN WORLD CACHE - Performance optimization
+        // ═══════════════════════════════════════════════════════════════════
+        function initWorldCache() {
+            worldCacheCanvas = document.createElement('canvas');
+            worldCacheCanvas.width = Math.min(CFG.OFFSCREEN_CACHE_SIZE, window.innerWidth * 2);
+            worldCacheCanvas.height = Math.min(CFG.OFFSCREEN_CACHE_SIZE, window.innerHeight * 2);
+            worldCacheCtx = worldCacheCanvas.getContext('2d');
+        }
+
+        function invalidateWorldCache() {
+            worldCacheValid = false;
+        }
+
+        function renderWorldToCache() {
+            if (!worldCacheCtx) initWorldCache();
+
+            const cacheW = worldCacheCanvas.width;
+            const cacheH = worldCacheCanvas.height;
+
+            // Clear cache
+            worldCacheCtx.clearRect(0, 0, cacheW, cacheH);
+
+            // Save current context state
+            const savedCtx = ctx;
+            ctx = worldCacheCtx;
+
+            // Calculate cache view bounds (centered on camera)
+            const cacheCameraX = camera.x - cacheW / 2;
+            const cacheCameraY = camera.y - cacheH / 2;
+
+            // Render static world elements
+            // Ground tiles
+            drawGroundTiles(cacheCameraX, cacheCameraY, cacheW, cacheH);
+
+            // Buildings (static part only)
+            buildings.forEach(b => {
+                const sx = b.x - cacheCameraX;
+                const sy = b.y - cacheCameraY;
+                if (sx > -300 && sx < cacheW + 300 && sy > -300 && sy < cacheH + 300) {
+                    drawBuildingStatic(b, sx, sy);
+                }
+            });
+
+            // Restore context
+            ctx = savedCtx;
+
+            worldCacheValid = true;
+            lastCacheCameraX = camera.x;
+            lastCacheCameraY = camera.y;
+        }
+
+        function drawCachedWorld() {
+            if (!worldCacheValid || !worldCacheCanvas) {
+                renderWorldToCache();
+            }
+
+            // Check if we need to regenerate cache (camera moved too far)
+            const cacheDist = Math.hypot(camera.x - lastCacheCameraX, camera.y - lastCacheCameraY);
+            if (cacheDist > CACHE_REGENERATE_DISTANCE) {
+                renderWorldToCache();
+            }
+
+            // Draw the cached world centered on camera
+            const cacheW = worldCacheCanvas.width;
+            const cacheH = worldCacheCanvas.height;
+            const drawX = (W - cacheW) / 2 + (lastCacheCameraX - camera.x);
+            const drawY = (H - cacheH) / 2 + (lastCacheCameraY - camera.y);
+
+            ctx.drawImage(worldCacheCanvas, drawX, drawY);
+        }
+
+        function drawGroundTiles(viewX, viewY, viewW, viewH) {
+            // Sand pattern
+            const tileSize = 100;
+            const startX = Math.floor(viewX / tileSize) * tileSize;
+            const startY = Math.floor(viewY / tileSize) * tileSize;
+
+            for (let x = startX; x < viewX + viewW + tileSize; x += tileSize) {
+                for (let y = startY; y < viewY + viewH + tileSize; y += tileSize) {
+                    // Sand color variation
+                    const sandVariation = Math.sin(x * 0.01) * Math.cos(y * 0.01) * 10;
+                    const baseColor = { r: 238 + sandVariation, g: 203 + sandVariation, b: 140 + sandVariation };
+                    ctx.fillStyle = `rgb(${baseColor.r}, ${baseColor.g}, ${baseColor.b})`;
+                    ctx.fillRect(x - viewX, y - viewY, tileSize + 1, tileSize + 1);
+
+                    // Beach texture dots
+                    if ((x + y) % 3 === 0) {
+                        ctx.fillStyle = `rgba(220, 180, 100, 0.3)`;
+                        ctx.fillRect(x - viewX + 20, y - viewY + 20, 4, 4);
+                    }
+                }
+            }
+        }
+
+        function drawBuildingStatic(b, sx, sy) {
+            // Simplified building render for cache
+            const isoHeight = b.height * 0.5;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(sx + b.width / 2, sy + b.depth - 5, b.width / 2, b.depth / 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Building body (simplified)
+            ctx.fillStyle = b.color || '#C4A574';
+            ctx.fillRect(sx, sy - isoHeight, b.width, b.depth + isoHeight);
+        }
+
         function spawnParticles(x, y, color, count = 8) {
             // Cap total particles
             const available = CFG.MAX_PARTICLES - particles.length;
@@ -6311,9 +7032,20 @@
 
             gameTime += dt;
 
+            // ══════ CHECK DAILY CHALLENGES ══════
+            if (Math.floor(gameTime) !== Math.floor(gameTime - dt)) {
+                checkDailyChallenges();
+            }
+
             // ══════ REBUILD SPATIAL GRID ══════
             spatialGrid.clear();
             enemies.forEach(e => spatialGrid.insert(e));
+
+            // ══════ UPDATE STUCK ENEMIES (Emergency teleport system) ══════
+            updateStuckEnemies(dt);
+
+            // ══════ UPDATE COMBO SYSTEM ══════
+            updateComboSystem(dt);
 
             // ══════ PLAYER MOVEMENT ══════
             let vx = 0, vy = 0;
@@ -6542,6 +7274,18 @@
                     return;
                 }
 
+                // A1 FRAME SKIPPING: Distant enemies update less frequently
+                // Enemies beyond FRAME_SKIP_DISTANCE only update every other frame
+                const shouldSkipFrame = d > CFG.FRAME_SKIP_DISTANCE && (updateFrame + index) % 2 !== 0;
+                if (shouldSkipFrame) {
+                    // Still apply knockback even when skipping frames
+                    e.x += e.knockback.x * dt;
+                    e.y += e.knockback.y * dt;
+                    e.knockback.x *= 0.92;
+                    e.knockback.y *= 0.92;
+                    return;
+                }
+
                 // FULL UPDATE for visible, scheduled enemies
                 if (d > 0) {
                     // Calculate intended movement
@@ -6748,6 +7492,10 @@
             enemies = enemies.filter(e => {
                 if (e.hp <= 0) {
                     kills++;
+
+                    // A1 COMBO SYSTEM - Track kill for combo
+                    addComboKill();
+
                     // Rate-limited kill sound (prevent audio overload during mass kills)
                     if (!AudioSystem.lastKillSound || now - AudioSystem.lastKillSound > CFG.AUDIO_KILL_COOLDOWN) {
                         AudioSystem.playHit();
@@ -6797,6 +7545,26 @@
                     // Chance for health drop
                     if (Math.random() < 0.03 && pickups.length < CFG.MAX_PICKUPS) {
                         pickups.push({ x: e.x, y: e.y, type: 'hp', value: 15 });
+                    }
+
+                    // ══════ A1 ISRAELI FOOD PICKUPS ══════
+                    // Chance for special Israeli food drops (5% from stronger enemies)
+                    if (type.xp >= 3 && Math.random() < 0.05 && pickups.length < CFG.MAX_PICKUPS) {
+                        const foodTypes = [
+                            { type: 'falafel', emoji: '🧆', value: 5, effect: 'speed', duration: 5 },
+                            { type: 'rugelach', emoji: '🥐', value: 10, effect: 'heal', duration: 0 },
+                            { type: 'bamba', emoji: '🥜', value: 3, effect: 'damage', duration: 8 }
+                        ];
+                        const food = foodTypes[Math.floor(Math.random() * foodTypes.length)];
+                        pickups.push({
+                            x: e.x + (Math.random() - 0.5) * 20,
+                            y: e.y + (Math.random() - 0.5) * 20,
+                            type: food.type,
+                            emoji: food.emoji,
+                            value: food.value,
+                            effect: food.effect,
+                            duration: food.duration
+                        });
                     }
 
                     spawnParticles(e.x, e.y, type.color, 10);
@@ -6905,6 +7673,26 @@
             document.getElementById('lvlVal').textContent = player.level;
             document.getElementById('timeVal').textContent = formatTime(gameTime);
             document.getElementById('killVal').textContent = kills;
+
+            // A1: Update combo display
+            const comboDisplay = document.getElementById('comboDisplay');
+            const comboVal = document.getElementById('comboVal');
+            if (comboSystem.count > 1) {
+                comboDisplay.style.display = 'flex';
+                comboVal.textContent = `x${comboSystem.count}`;
+                // Color based on combo level
+                if (comboSystem.count >= 50) {
+                    comboDisplay.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+                } else if (comboSystem.count >= 25) {
+                    comboDisplay.style.background = 'linear-gradient(135deg, #FF6B6B, #FF8E8E)';
+                } else if (comboSystem.count >= 10) {
+                    comboDisplay.style.background = 'linear-gradient(135deg, #FF6B35, #FF8C42)';
+                } else {
+                    comboDisplay.style.background = 'linear-gradient(135deg, #4ECDC4, #44B8B0)';
+                }
+            } else {
+                comboDisplay.style.display = 'none';
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -6971,12 +7759,23 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('₪', 0, 1);
-                } else {
+                } else if (p.type === 'hp') {
                     // Health pickup (heart) - no shadow for performance
                     ctx.font = '20px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('❤️', 0, 0);
+                } else if (['falafel', 'rugelach', 'bamba'].includes(p.type)) {
+                    // A1 Israeli food pickups
+                    ctx.font = '22px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(p.emoji, 0, 0);
+                    // Glow effect
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = p.type === 'falafel' ? '#4ECDC4' : p.type === 'rugelach' ? '#FFD700' : '#FF6B35';
+                    ctx.fillText(p.emoji, 0, 0);
+                    ctx.shadowBlur = 0;
                 }
                 ctx.restore();
             });
@@ -7153,11 +7952,15 @@
         // ═══════════════════════════════════════════════════════════════════
         function gameLoop(timestamp) {
             if (lastTime === 0) lastTime = timestamp;
-            const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+            const rawDt = Math.min((timestamp - lastTime) / 1000, 0.1);
             lastTime = timestamp;
 
+            // A1: Delta time smoothing to prevent frame spike lag
+            // Smoothly interpolate between current and target dt
+            smoothedDT = smoothedDT * CFG.DT_SMOOTHING + rawDt * (1 - CFG.DT_SMOOTHING);
+
             updateFPS(timestamp);
-            update(dt);
+            update(smoothedDT);
             draw();
 
             requestAnimationFrame(gameLoop);
