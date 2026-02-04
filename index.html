@@ -1609,6 +1609,8 @@
                 <button class="btn-menu" id="leaderboardBtn">🏆 LEADERBOARD</button>
             </div>
             <p class="controls-hint">Move with <span class="key">WASD</span> or <span class="key">Arrow Keys</span></p>
+            <button class="btn-mute" id="muteBtn"
+                style="position: absolute; bottom: 20px; right: 20px; padding: 10px 15px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; font-size: 24px; color: #fff; transition: all 0.2s ease;">🔊</button>
         </div>
     </div>
 
@@ -1862,6 +1864,281 @@
                 for (const b of buildings) {
                     this.insert(b);
                 }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // AUDIO SYSTEM - Synthesized Klezmer Music & Sound Effects
+        // ═══════════════════════════════════════════════════════════════════
+        const AudioSystem = {
+            ctx: null,
+            isMuted: false,
+            musicGain: null,
+            sfxGain: null,
+            isPlaying: false,
+            musicInterval: null,
+            noteIndex: 0,
+
+            // Freygish scale (Jewish minor scale) - D E♭ F# G A B♭ C D
+            freygishScale: [293.66, 311.13, 369.99, 392.00, 440.00, 466.16, 523.25, 587.33],
+
+            // Melody patterns for klezmer feel
+            melodyPatterns: [
+                [0, 2, 3, 4, 3, 2, 0, 0],
+                [4, 3, 2, 3, 4, 4, 4, 3],
+                [0, 0, 3, 3, 4, 4, 3, 2],
+                [5, 4, 3, 4, 5, 5, 4, 3],
+                [2, 3, 4, 5, 4, 3, 2, 0],
+                [3, 2, 0, 2, 3, 4, 3, 2]
+            ],
+            currentPattern: 0,
+            patternNote: 0,
+
+            init() {
+                if (this.ctx) return;
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+                    // Master gain for music
+                    this.musicGain = this.ctx.createGain();
+                    this.musicGain.gain.value = 0.15;
+                    this.musicGain.connect(this.ctx.destination);
+
+                    // Master gain for sound effects
+                    this.sfxGain = this.ctx.createGain();
+                    this.sfxGain.gain.value = 0.3;
+                    this.sfxGain.connect(this.ctx.destination);
+
+                    // Load mute state from localStorage
+                    this.isMuted = localStorage.getItem('sababaMuted') === 'true';
+                    this.updateMuteState();
+
+                } catch (e) {
+                    console.warn('Audio not supported');
+                }
+            },
+
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                localStorage.setItem('sababaMuted', this.isMuted);
+                this.updateMuteState();
+                return this.isMuted;
+            },
+
+            updateMuteState() {
+                if (this.musicGain) {
+                    this.musicGain.gain.value = this.isMuted ? 0 : 0.15;
+                }
+                if (this.sfxGain) {
+                    this.sfxGain.gain.value = this.isMuted ? 0 : 0.3;
+                }
+            },
+
+            // Play a note with optional duration and vibrato
+            playNote(freq, duration = 0.2, gain = 0.5, vibrato = false) {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                const osc = this.ctx.createOscillator();
+                const gainNode = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+
+                // Add vibrato for klezmer feel
+                if (vibrato) {
+                    const vibOsc = this.ctx.createOscillator();
+                    const vibGain = this.ctx.createGain();
+                    vibOsc.frequency.value = 6;
+                    vibGain.gain.value = freq * 0.02;
+                    vibOsc.connect(vibGain);
+                    vibGain.connect(osc.frequency);
+                    vibOsc.start();
+                    vibOsc.stop(this.ctx.currentTime + duration);
+                }
+
+                gainNode.gain.setValueAtTime(gain, this.ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+                osc.connect(gainNode);
+                gainNode.connect(this.musicGain);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+
+            // Background music - klezmer style
+            startMusic(tempo = 280) {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+
+                const beatDuration = 60000 / tempo;
+
+                this.musicInterval = setInterval(() => {
+                    if (this.isMuted) return;
+
+                    const pattern = this.melodyPatterns[this.currentPattern];
+                    const noteIdx = pattern[this.patternNote];
+                    const freq = this.freygishScale[noteIdx];
+
+                    // Play melody note with vibrato on long notes
+                    const isLongNote = this.patternNote % 2 === 0;
+                    this.playNote(freq, isLongNote ? 0.35 : 0.2, 0.4, isLongNote);
+
+                    // Add bass on beats 1 and 3
+                    if (this.patternNote === 0 || this.patternNote === 4) {
+                        this.playNote(this.freygishScale[0] / 2, 0.4, 0.25);
+                    }
+
+                    this.patternNote++;
+                    if (this.patternNote >= pattern.length) {
+                        this.patternNote = 0;
+                        this.currentPattern = (this.currentPattern + 1) % this.melodyPatterns.length;
+                    }
+                }, beatDuration);
+            },
+
+            stopMusic() {
+                if (this.musicInterval) {
+                    clearInterval(this.musicInterval);
+                    this.musicInterval = null;
+                }
+                this.isPlaying = false;
+                this.patternNote = 0;
+            },
+
+            // Sound effects
+            playShoot() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.sfxGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+
+            playHit() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(this.sfxGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            },
+
+            playPickup() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(this.sfxGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            },
+
+            playLevelUp() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                // Arpeggio up the scale
+                [0, 2, 4, 7].forEach((idx, i) => {
+                    setTimeout(() => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = 'sine';
+                        osc.frequency.value = this.freygishScale[idx % 8];
+
+                        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+
+                        osc.connect(gain);
+                        gain.connect(this.sfxGain);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.3);
+                    }, i * 100);
+                });
+            },
+
+            playGameOver() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                // Sad descending notes
+                [4, 3, 2, 0].forEach((idx, i) => {
+                    setTimeout(() => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = 'triangle';
+                        osc.frequency.value = this.freygishScale[idx] * 0.5;
+
+                        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+
+                        osc.connect(gain);
+                        gain.connect(this.sfxGain);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.5);
+                    }, i * 200);
+                });
+            },
+
+            playClick() {
+                if (!this.ctx || this.isMuted) return;
+                this.resume();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = 600;
+
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+
+                osc.connect(gain);
+                gain.connect(this.sfxGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
             }
         };
 
@@ -7829,15 +8106,42 @@
         window.addEventListener('keydown', e => { keys[e.code] = true; });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-        document.getElementById('startBtn').onclick = startGame;
-        document.getElementById('retryBtn').onclick = startGame;
-        document.getElementById('weaponsBtn').onclick = showWeaponSelect;
-        document.getElementById('weaponsBackBtn').onclick = hideWeaponSelect;
-        document.getElementById('questsBtn').onclick = showQuestScreen;
-        document.getElementById('questsBackBtn').onclick = hideQuestScreen;
-        document.getElementById('leaderboardBtn').onclick = toggleLeaderboard;
-        document.getElementById('leaderboardClose').onclick = hideLeaderboard;
-        document.getElementById('saveNameBtn').onclick = savePlayerName;
+        document.getElementById('startBtn').onclick = () => {
+            AudioSystem.init();
+            AudioSystem.startMusic(320); // Faster tempo for gameplay
+            AudioSystem.playClick();
+            startGame();
+        };
+        document.getElementById('retryBtn').onclick = () => {
+            AudioSystem.init();
+            AudioSystem.startMusic(320);
+            AudioSystem.playClick();
+            startGame();
+        };
+        document.getElementById('weaponsBtn').onclick = () => { AudioSystem.playClick(); showWeaponSelect(); };
+        document.getElementById('weaponsBackBtn').onclick = () => { AudioSystem.playClick(); hideWeaponSelect(); };
+        document.getElementById('questsBtn').onclick = () => { AudioSystem.playClick(); showQuestScreen(); };
+        document.getElementById('questsBackBtn').onclick = () => { AudioSystem.playClick(); hideQuestScreen(); };
+        document.getElementById('leaderboardBtn').onclick = () => { AudioSystem.playClick(); toggleLeaderboard(); };
+        document.getElementById('leaderboardClose').onclick = () => { AudioSystem.playClick(); hideLeaderboard(); };
+        document.getElementById('saveNameBtn').onclick = () => { AudioSystem.playClick(); savePlayerName(); };
+
+        // Mute button handler
+        document.getElementById('muteBtn').onclick = () => {
+            AudioSystem.init();
+            const isMuted = AudioSystem.toggleMute();
+            document.getElementById('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+        };
+
+        // Initialize audio on first page interaction (menu music)
+        document.body.addEventListener('click', () => {
+            AudioSystem.init();
+            if (!AudioSystem.isPlaying) {
+                AudioSystem.startMusic(280); // Slower tempo for menu
+            }
+            // Update mute button state
+            document.getElementById('muteBtn').textContent = AudioSystem.isMuted ? '🔇' : '🔊';
+        }, { once: true });
 
         // Name modal handlers
         document.getElementById('modalSaveBtn').onclick = saveNameFromModal;
@@ -7859,10 +8163,63 @@
         });
 
         // ═══════════════════════════════════════════════════════════════════
-        // LEADERBOARD SYSTEM
+        // LEADERBOARD SYSTEM - Local + Supabase Online
         // ═══════════════════════════════════════════════════════════════════
         const LEADERBOARD_KEY = 'sababaSurvivorLeaderboard';
         let currentLeaderboardType = 'xp';
+
+        // Supabase Configuration (safe to expose - protected by RLS policies)
+        const SUPABASE_URL = 'https://bowiwkcvyoetbayhgjlb.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_EPYBPuMMG8rfq6eLotbWhQ_4UrpaCbg';
+
+        // Submit score to Supabase online leaderboard
+        async function submitToSupabase(playerName, score, kills, time, bossDefeated) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        player_name: playerName,
+                        score: score,
+                        kills: kills || 0,
+                        survival_time: time || 0,
+                        boss_defeated: bossDefeated || 0
+                    })
+                });
+                if (!response.ok) {
+                    console.warn('Supabase submit failed:', response.status);
+                }
+            } catch (err) {
+                console.warn('Supabase offline, using local storage only');
+            }
+        }
+
+        // Fetch leaderboard from Supabase
+        async function fetchSupabaseLeaderboard(sortBy = 'score') {
+            try {
+                const orderColumn = sortBy === 'time' ? 'survival_time' : sortBy === 'kills' ? 'kills' : 'score';
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/leaderboard?select=player_name,score,kills,survival_time,boss_defeated&order=${orderColumn}.desc&limit=10`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    }
+                );
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (err) {
+                console.warn('Supabase fetch failed, using local data');
+            }
+            return null;
+        }
 
         function getLeaderboardData() {
             const data = localStorage.getItem(LEADERBOARD_KEY);
@@ -7973,13 +8330,40 @@
             });
 
             saveLeaderboardData(data);
+
+            // Also submit to Supabase online leaderboard
+            submitToSupabase(
+                metaProgress.playerName,
+                metaProgress.totalXP,
+                metaProgress.stats.totalKills,
+                metaProgress.stats.bestTime,
+                metaProgress.stats.bossDefeated || 0
+            );
         }
 
-        function loadLeaderboard(type = 'xp') {
+        async function loadLeaderboard(type = 'xp') {
             currentLeaderboardType = type;
-            const data = getLeaderboardData();
             const list = document.getElementById('leaderboardList');
-            const entries = data[type] || [];
+            list.innerHTML = '<div class="leaderboard-loading">Loading global scores...</div>';
+
+            // Try Supabase first, fall back to local storage
+            let entries = [];
+            const supabaseData = await fetchSupabaseLeaderboard(type);
+
+            if (supabaseData && supabaseData.length > 0) {
+                // Convert Supabase format to local format
+                entries = supabaseData.map(e => ({
+                    name: e.player_name,
+                    xp: e.score,
+                    kills: e.kills,
+                    time: e.survival_time,
+                    bossDefeated: e.boss_defeated
+                }));
+            } else {
+                // Fallback to local data
+                const localData = getLeaderboardData();
+                entries = localData[type] || [];
+            }
 
             if (entries.length === 0) {
                 list.innerHTML = '<div class="leaderboard-loading">No scores yet! Play a game to get on the board.</div>';
@@ -8003,11 +8387,11 @@
 
                 let valueDisplay = '';
                 if (type === 'xp') {
-                    valueDisplay = `⭐ ${entry.xp.toLocaleString()}`;
+                    valueDisplay = `⭐ ${(entry.xp || 0).toLocaleString()}`;
                 } else if (type === 'kills') {
-                    valueDisplay = `💀 ${entry.kills.toLocaleString()}`;
+                    valueDisplay = `💀 ${(entry.kills || 0).toLocaleString()}`;
                 } else if (type === 'time') {
-                    valueDisplay = `⏱️ ${formatTime(entry.time)}`;
+                    valueDisplay = `⏱️ ${formatTime(entry.time || 0)}`;
                 }
 
                 const bossIcon = entry.bossDefeated > 0 ? ' 👑' : '';
