@@ -2202,6 +2202,63 @@
         ];
 
         // ═══════════════════════════════════════════════════════════════════
+        // SPRITE PRE-RENDERING CACHE (Vampire Survivors technique!)
+        // Pre-render each enemy type ONCE, then use drawImage() for 60fps
+        // ═══════════════════════════════════════════════════════════════════
+        const enemySpriteCache = {}; // type index -> { canvas, width, height }
+        let spriteCacheReady = false;
+
+        function preRenderEnemySprites() {
+            // This function is called after all drawXXXEnemy functions are defined
+            // It renders each enemy type to an offscreen canvas for fast stamping
+            ENEMY_TYPES.forEach((enemyType, index) => {
+                const padding = 20; // Extra space for shadows/effects
+                const size = enemyType.size + padding * 2;
+
+                const offscreen = document.createElement('canvas');
+                offscreen.width = size;
+                offscreen.height = size;
+                const offCtx = offscreen.getContext('2d');
+
+                // Center the drawing
+                offCtx.translate(size / 2, size / 2);
+
+                // Draw the enemy using existing draw functions
+                // We temporarily swap ctx to offCtx
+                const originalCtx = ctx;
+                ctx = offCtx;
+
+                // Draw with animation frame 0 and no flash
+                const sz = enemyType.size;
+                switch (index) {
+                    case 0: drawPigEnemy(sz, 0, 1); break;
+                    case 1: drawShrimpEnemy(sz, 0, 1); break;
+                    case 2: drawCrabEnemy(sz, 0, 1); break;
+                    case 3: drawBaconEnemy(sz, 0, 1); break;
+                    case 4: drawLobsterEnemy(sz, 0, 1); break;
+                    case 5: drawBreadEnemy(sz, 0, 1); break;
+                    case 6: drawHamanEnemy(sz, 0, 1); break;
+                    case 7: drawPharaohEnemy(sz, 0, 1); break;
+                    case 8: drawGoliathEnemy(sz, 0, 1); break;
+                    case 9: drawGoldenCalfEnemy(sz, 0, 1); break;
+                    default: drawBasicEnemy(sz, enemyType.color, 1);
+                }
+
+                // Restore original context
+                ctx = originalCtx;
+
+                // Cache the pre-rendered sprite
+                enemySpriteCache[index] = {
+                    canvas: offscreen,
+                    width: size,
+                    height: size
+                };
+            });
+            spriteCacheReady = true;
+            console.log('🎮 Enemy sprites pre-rendered for 60fps performance!');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
         // STARTING WEAPONS
         // ═══════════════════════════════════════════════════════════════════
         const STARTING_WEAPONS = [
@@ -2954,9 +3011,26 @@
         function drawEnemy(type, x, y, anim, flash) {
             const e = ENEMY_TYPES[type];
             const sz = e.size;
-
-            // ALWAYS use full AAA rendering - no low detail mode
             const bob = Math.sin(anim * 4) * 3;
+
+            // 🚀 SPRITE CACHE: Use pre-rendered image for maximum performance!
+            if (spriteCacheReady && enemySpriteCache[type]) {
+                const sprite = enemySpriteCache[type];
+                // Draw shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + sz * 0.4, sz * 0.35, sz * 0.08, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // ONE drawImage call instead of 30+ draw operations!
+                ctx.drawImage(
+                    sprite.canvas,
+                    x - sprite.width / 2,
+                    y - sprite.height / 2 + bob
+                );
+                return;
+            }
+
+            // Fallback: Full rendering when cache not ready
             const wobble = Math.sin(anim * 3) * 0.05;
             const time = anim;
 
@@ -2972,43 +3046,20 @@
             ctx.translate(0, bob);
             ctx.rotate(wobble);
 
-            // Flash overlay disabled - no more white flash on hit
-            const flashMult = 1; // Always normal brightness (was: flash > 0 ? 1.8 : 1)
+            const flashMult = 1;
 
             switch (type) {
-                case 0: // Pig - Pink cartoon pig
-                    drawPigEnemy(sz, time, flashMult);
-                    break;
-                case 1: // Shrimp - Curved shrimp
-                    drawShrimpEnemy(sz, time, flashMult);
-                    break;
-                case 2: // Crab - Red crab with claws
-                    drawCrabEnemy(sz, time, flashMult);
-                    break;
-                case 3: // Bacon - Strip of bacon
-                    drawBaconEnemy(sz, time, flashMult);
-                    break;
-                case 4: // Lobster - Big red lobster
-                    drawLobsterEnemy(sz, time, flashMult);
-                    break;
-                case 5: // Bread (Chametz) - Evil bread loaf
-                    drawBreadEnemy(sz, time, flashMult);
-                    break;
-                case 6: // Haman - Evil villain with hat
-                    drawHamanEnemy(sz, time, flashMult);
-                    break;
-                case 7: // Pharaoh - Egyptian pharaoh
-                    drawPharaohEnemy(sz, time, flashMult);
-                    break;
-                case 8: // Goliath - Giant warrior
-                    drawGoliathEnemy(sz, time, flashMult);
-                    break;
-                case 9: // Golden Calf - Golden idol
-                    drawGoldenCalfEnemy(sz, time, flashMult);
-                    break;
-                default:
-                    // Fallback basic enemy
-                    drawBasicEnemy(sz, e.color, flashMult);
+                case 0: drawPigEnemy(sz, time, flashMult); break;
+                case 1: drawShrimpEnemy(sz, time, flashMult); break;
+                case 2: drawCrabEnemy(sz, time, flashMult); break;
+                case 3: drawBaconEnemy(sz, time, flashMult); break;
+                case 4: drawLobsterEnemy(sz, time, flashMult); break;
+                case 5: drawBreadEnemy(sz, time, flashMult); break;
+                case 6: drawHamanEnemy(sz, time, flashMult); break;
+                case 7: drawPharaohEnemy(sz, time, flashMult); break;
+                case 8: drawGoliathEnemy(sz, time, flashMult); break;
+                case 9: drawGoldenCalfEnemy(sz, time, flashMult); break;
+                default: drawBasicEnemy(sz, e.color, flashMult);
             }
 
             ctx.restore();
@@ -5286,6 +5337,11 @@
         // GAME FUNCTIONS
         // ═══════════════════════════════════════════════════════════════════
         function startGame() {
+            // Pre-render enemy sprites for 60fps performance (runs once)
+            if (!spriteCacheReady) {
+                preRenderEnemySprites();
+            }
+
             hideLeaderboard(); // Hide popup if open
             gameState = 'playing';
             gameTime = 0;
