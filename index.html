@@ -1691,6 +1691,26 @@
                 </div>
             </div>
             <button class="btn-retry" id="retryBtn">TRY AGAIN</button>
+            <button class="btn-menu-return" id="menuBtn"
+                style="margin-top: 15px; padding: 12px 35px; font-size: 16px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; border-radius: 8px; transition: all 0.2s ease;">↩
+                RETURN TO MENU</button>
+        </div>
+    </div>
+
+    <!-- Pause Menu -->
+    <div id="pauseScreen" class="screen hidden" style="background: rgba(0,0,0,0.85);">
+        <div class="screen-content" style="max-width: 400px;">
+            <h2
+                style="font-size: 48px; color: #4ECDC4; text-shadow: 0 0 30px rgba(78,205,196,0.5); margin-bottom: 40px;">
+                ⏸ PAUSED</h2>
+            <button class="btn-pause-option" id="resumeBtn"
+                style="display: block; width: 100%; padding: 18px; margin-bottom: 15px; font-size: 20px; background: linear-gradient(135deg, #4ECDC4, #45B7AA); border: none; color: #fff; cursor: pointer; border-radius: 10px; font-weight: bold; transition: all 0.2s ease;">▶
+                RESUME</button>
+            <button class="btn-pause-option" id="pauseMenuBtn"
+                style="display: block; width: 100%; padding: 18px; font-size: 18px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; border-radius: 10px; transition: all 0.2s ease;">↩
+                RETURN TO MENU</button>
+            <p style="margin-top: 30px; color: rgba(255,255,255,0.5); font-size: 14px;">Press <span
+                    style="color: #4ECDC4; font-weight: bold;">ESC</span> to resume</p>
         </div>
     </div>
 
@@ -6134,6 +6154,7 @@
         // ═══════════════════════════════════════════════════════════════════
         function update(dt) {
             if (gameState !== 'playing') return;
+            if (isPaused) return; // Freeze game when paused
 
             // Hitstop - freeze game briefly for impact
             if (hitstop > 0) {
@@ -8114,7 +8135,52 @@
         // ═══════════════════════════════════════════════════════════════════
         // INPUT
         // ═══════════════════════════════════════════════════════════════════
-        window.addEventListener('keydown', e => { keys[e.code] = true; });
+        let isPaused = false;
+
+        function togglePause() {
+            if (!running) return; // Can't pause if not in game
+            isPaused = !isPaused;
+            const pauseScreen = document.getElementById('pauseScreen');
+            if (isPaused) {
+                pauseScreen.classList.remove('hidden');
+                AudioSystem.stopMusic();
+            } else {
+                pauseScreen.classList.add('hidden');
+                AudioSystem.startMusic(320);
+            }
+        }
+
+        function resumeGame() {
+            if (isPaused) {
+                isPaused = false;
+                document.getElementById('pauseScreen').classList.add('hidden');
+                AudioSystem.startMusic(320);
+            }
+        }
+
+        function returnToMenu() {
+            // Stop the game and return to main menu
+            running = false;
+            isPaused = false;
+            document.getElementById('pauseScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            canvas.classList.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            AudioSystem.stopMusic();
+            AudioSystem.startMusic(280); // Menu tempo
+        }
+
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            // ESC to toggle pause during gameplay
+            if (e.code === 'Escape' && running && !document.getElementById('levelUpScreen').classList.contains('hidden') === false) {
+                // Only allow pause if level up screen is not showing
+                if (document.getElementById('levelUpScreen').classList.contains('hidden')) {
+                    togglePause();
+                }
+            }
+        });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
 
         document.getElementById('startBtn').onclick = () => {
@@ -8128,6 +8194,18 @@
             AudioSystem.startMusic(320);
             AudioSystem.playClick();
             startGame();
+        };
+        document.getElementById('menuBtn').onclick = () => {
+            AudioSystem.playClick();
+            returnToMenu();
+        };
+        document.getElementById('resumeBtn').onclick = () => {
+            AudioSystem.playClick();
+            resumeGame();
+        };
+        document.getElementById('pauseMenuBtn').onclick = () => {
+            AudioSystem.playClick();
+            returnToMenu();
         };
         document.getElementById('weaponsBtn').onclick = () => { AudioSystem.playClick(); showWeaponSelect(); };
         document.getElementById('weaponsBackBtn').onclick = () => { AudioSystem.playClick(); hideWeaponSelect(); };
