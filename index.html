@@ -2453,34 +2453,6 @@
         let highPerfMode = false; // True when many enemies - uses solid colors instead of gradients
 
         // ═══════════════════════════════════════════════════════════════════
-        // OBJECT POOLING - Reuse objects to avoid GC pressure
-        // ═══════════════════════════════════════════════════════════════════
-        class ObjectPool {
-            constructor(createFn, initialSize = 100) {
-                this.pool = [];
-                this.createFn = createFn;
-                // Pre-populate pool
-                for (let i = 0; i < initialSize; i++) {
-                    this.pool.push(createFn());
-                }
-            }
-            acquire() {
-                return this.pool.pop() || this.createFn();
-            }
-            release(obj) {
-                this.pool.push(obj);
-            }
-            get available() {
-                return this.pool.length;
-            }
-        }
-
-        // Particle pool (particles are created/destroyed most frequently)
-        const particlePool = new ObjectPool(() => ({
-            x: 0, y: 0, vx: 0, vy: 0, size: 0, color: '', life: 0, active: false
-        }), 500);
-
-        // ═══════════════════════════════════════════════════════════════════
         // PLAYER
         // ═══════════════════════════════════════════════════════════════════
         function createPlayer() {
@@ -6137,16 +6109,15 @@
             const toSpawn = Math.min(count, available);
 
             for (let i = 0; i < toSpawn; i++) {
-                // Use pooled particle instead of creating new object
-                const p = particlePool.acquire();
-                p.x = x;
-                p.y = y;
-                p.vx = (Math.random() - 0.5) * 200;
-                p.vy = (Math.random() - 0.5) * 200;
-                p.size = 3 + Math.random() * 4;
-                p.color = color;
-                p.life = 0.5 + Math.random() * 0.3;
-                particles.push(p);
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 200,
+                    vy: (Math.random() - 0.5) * 200,
+                    size: 3 + Math.random() * 4,
+                    color: color,
+                    life: 0.5 + Math.random() * 0.3
+                });
             }
         }
 
@@ -6743,24 +6714,15 @@
                 return true;
             });
 
-            // ══════ UPDATE PARTICLES (with pool recycling) ══════
-            let particleWriteIdx = 0;
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
+            // ══════ UPDATE PARTICLES ══════
+            particles.forEach(p => {
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
                 p.life -= dt;
                 p.vx *= 0.95;
                 p.vy *= 0.95;
-
-                if (p.life > 0) {
-                    particles[particleWriteIdx++] = p;
-                } else {
-                    // Return dead particle to pool
-                    particlePool.release(p);
-                }
-            }
-            particles.length = particleWriteIdx;
+            });
+            particles = particles.filter(p => p.life > 0);
 
             // ══════ UPDATE FLOATING TEXTS ══════
             floatingTexts.forEach(t => {
