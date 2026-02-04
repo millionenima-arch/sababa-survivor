@@ -2453,6 +2453,34 @@
         let highPerfMode = false; // True when many enemies - uses solid colors instead of gradients
 
         // ═══════════════════════════════════════════════════════════════════
+        // OBJECT POOLING - Reuse objects to avoid GC pressure
+        // ═══════════════════════════════════════════════════════════════════
+        class ObjectPool {
+            constructor(createFn, initialSize = 100) {
+                this.pool = [];
+                this.createFn = createFn;
+                // Pre-populate pool
+                for (let i = 0; i < initialSize; i++) {
+                    this.pool.push(createFn());
+                }
+            }
+            acquire() {
+                return this.pool.pop() || this.createFn();
+            }
+            release(obj) {
+                this.pool.push(obj);
+            }
+            get available() {
+                return this.pool.length;
+            }
+        }
+
+        // Particle pool (particles are created/destroyed most frequently)
+        const particlePool = new ObjectPool(() => ({
+            x: 0, y: 0, vx: 0, vy: 0, size: 0, color: '', life: 0, active: false
+        }), 500);
+
+        // ═══════════════════════════════════════════════════════════════════
         // PLAYER
         // ═══════════════════════════════════════════════════════════════════
         function createPlayer() {
@@ -6104,23 +6132,21 @@
         }
 
         function spawnParticles(x, y, color, count = 8) {
-            // Always spawn full particle count for visual quality
-            const actualCount = count;
-
             // Cap total particles
             const available = CFG.MAX_PARTICLES - particles.length;
-            const toSpawn = Math.min(actualCount, available);
+            const toSpawn = Math.min(count, available);
 
             for (let i = 0; i < toSpawn; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 200,
-                    vy: (Math.random() - 0.5) * 200,
-                    size: 3 + Math.random() * 4,
-                    color: color,
-                    life: 0.5 + Math.random() * 0.3
-                });
+                // Use pooled particle instead of creating new object
+                const p = particlePool.acquire();
+                p.x = x;
+                p.y = y;
+                p.vx = (Math.random() - 0.5) * 200;
+                p.vy = (Math.random() - 0.5) * 200;
+                p.size = 3 + Math.random() * 4;
+                p.color = color;
+                p.life = 0.5 + Math.random() * 0.3;
+                particles.push(p);
             }
         }
 
@@ -6717,15 +6743,24 @@
                 return true;
             });
 
-            // ══════ UPDATE PARTICLES ══════
-            particles.forEach(p => {
+            // ══════ UPDATE PARTICLES (with pool recycling) ══════
+            let particleWriteIdx = 0;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
                 p.life -= dt;
                 p.vx *= 0.95;
                 p.vy *= 0.95;
-            });
-            particles = particles.filter(p => p.life > 0);
+
+                if (p.life > 0) {
+                    particles[particleWriteIdx++] = p;
+                } else {
+                    // Return dead particle to pool
+                    particlePool.release(p);
+                }
+            }
+            particles.length = particleWriteIdx;
 
             // ══════ UPDATE FLOATING TEXTS ══════
             floatingTexts.forEach(t => {
@@ -6767,9 +6802,15 @@
             // Background
             drawBackground();
 
-            // World objects (behind player)
+            // World objects (behind player - with viewport culling)
             worldObjects.forEach(obj => {
-                if (obj.y < player.y) drawWorldObject(obj);
+                if (obj.y < player.y) {
+                    const sx = obj.x - camera.x;
+                    const sy = obj.y - camera.y;
+                    // Skip objects outside viewport (use larger margin for tall objects like palm trees)
+                    if (sx < -150 || sx > W + 150 || sy < -150 || sy > H + 150) return;
+                    drawWorldObject(obj);
+                }
             });
 
             // Pickups
@@ -6834,10 +6875,12 @@
                 ctx.restore();
             });
 
-            // Particles
+            // Particles (with viewport culling)
             particles.forEach(p => {
                 const sx = p.x - camera.x;
                 const sy = p.y - camera.y;
+                // Skip particles outside viewport
+                if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) return;
                 ctx.globalAlpha = p.life * 2;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
@@ -6869,8 +6912,14 @@
                 drawBoss();
             }
 
-            // Projectiles
-            projectiles.forEach(p => drawProjectile(p));
+            // Projectiles (with viewport culling)
+            projectiles.forEach(p => {
+                const sx = p.x - camera.x;
+                const sy = p.y - camera.y;
+                // Skip projectiles outside viewport
+                if (sx < -50 || sx > W + 50 || sy < -50 || sy > H + 50) return;
+                drawProjectile(p);
+            });
 
             // Dreidels
             if (player && player.weapons.dreidel) {
@@ -6890,9 +6939,14 @@
                 });
             }
 
-            // World objects (in front of player)
+            // World objects (in front of player - with viewport culling)
             worldObjects.forEach(obj => {
-                if (obj.y >= player.y) drawWorldObject(obj);
+                if (obj.y >= player.y) {
+                    const sx = obj.x - camera.x;
+                    const sy = obj.y - camera.y;
+                    if (sx < -150 || sx > W + 150 || sy < -150 || sy > H + 150) return;
+                    drawWorldObject(obj);
+                }
             });
 
             // Player
