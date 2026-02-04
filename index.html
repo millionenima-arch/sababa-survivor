@@ -3849,9 +3849,7 @@
 
             const sz = 12;
 
-            // Glow
-            ctx.shadowColor = '#4ECDC4';
-            ctx.shadowBlur = 15;
+            // Removed shadowBlur for performance - use brighter fills instead
 
             // Star of David
             ctx.strokeStyle = '#4ECDC4';
@@ -6785,50 +6783,32 @@
                 ctx.translate(sx, sy + Math.sin(Date.now() / 150) * 4);
 
                 if (p.type === 'xp') {
-                    // Gold Shekel Coin
+                    // Gold Shekel Coin - SIMPLIFIED for performance
                     const coinSize = 10;
                     const spinAngle = Date.now() / 300;
                     const scaleX = Math.abs(Math.cos(spinAngle)) * 0.6 + 0.4;
 
                     ctx.scale(scaleX, 1);
 
-                    // Coin glow
-                    ctx.shadowColor = '#FFD700';
-                    ctx.shadowBlur = 15;
-
-                    // Coin body gradient
-                    const coinGrad = ctx.createRadialGradient(-2, -2, 0, 0, 0, coinSize);
-                    coinGrad.addColorStop(0, '#FFF8DC');
-                    coinGrad.addColorStop(0.3, '#FFD700');
-                    coinGrad.addColorStop(0.7, '#DAA520');
-                    coinGrad.addColorStop(1, '#B8860B');
-                    ctx.fillStyle = coinGrad;
+                    // Simple gold coin (no shadow, no gradient for performance)
+                    ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
                     ctx.arc(0, 0, coinSize, 0, Math.PI * 2);
                     ctx.fill();
 
                     // Coin edge
-                    ctx.strokeStyle = '#8B7500';
+                    ctx.strokeStyle = '#B8860B';
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
 
                     // Shekel symbol (₪)
-                    ctx.shadowBlur = 0;
                     ctx.fillStyle = '#8B6914';
                     ctx.font = 'bold 11px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('₪', 0, 1);
-
-                    // Shine highlight
-                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                    ctx.beginPath();
-                    ctx.ellipse(-3, -4, 4, 2, -0.5, 0, Math.PI * 2);
-                    ctx.fill();
                 } else {
-                    // Health pickup (heart)
-                    ctx.shadowColor = '#2ECC71';
-                    ctx.shadowBlur = 12;
+                    // Health pickup (heart) - no shadow for performance
                     ctx.font = '20px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -6891,8 +6871,7 @@
                     ctx.save();
                     ctx.translate(dx, dy);
                     ctx.rotate(d.angle * 4);
-                    ctx.shadowColor = '#6C5CE7';
-                    ctx.shadowBlur = 15;
+                    // Removed shadowBlur for performance
                     ctx.font = '32px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
