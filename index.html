@@ -1598,136 +1598,15 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════════
-           DAILY CHALLENGES PANEL
+           MENU CHALLENGE CARDS (for Daily Challenges screen)
            ═══════════════════════════════════════════════════════════════════ */
-        .daily-challenges-panel {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 280px;
-            background: linear-gradient(135deg, rgba(10, 10, 20, 0.95), rgba(20, 20, 40, 0.95));
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 16px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            z-index: 101;
-            animation: slideInRight 0.5s ease-out;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .daily-challenges-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .daily-icon {
-            font-size: 20px;
-        }
-
-        .daily-title {
-            font-family: 'Secular One', sans-serif;
-            font-size: 14px;
-            color: #FFD700;
-            letter-spacing: 1px;
-        }
-
-        .daily-progress {
-            font-family: 'Secular One', sans-serif;
-            font-size: 14px;
-            color: #4ECDC4;
-            background: rgba(78, 205, 196, 0.2);
-            padding: 4px 10px;
-            border-radius: 12px;
-        }
-
-        .daily-challenges-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .daily-challenge-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .menu-challenge-card {
             transition: all 0.3s ease;
         }
 
-        .daily-challenge-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(-4px);
-        }
-
-        .daily-challenge-item.completed {
-            background: rgba(78, 205, 196, 0.15);
-            border-color: rgba(78, 205, 196, 0.4);
-        }
-
-        .daily-challenge-item.completed .challenge-name {
-            color: #4ECDC4;
-            text-decoration: line-through;
-        }
-
-        .challenge-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 6px;
-        }
-
-        .challenge-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-
-        .challenge-progress-bar {
-            height: 6px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-
-        .challenge-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #FF6B35, #FF8C42);
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-
-        .daily-challenge-item.completed .challenge-progress-fill {
-            background: linear-gradient(90deg, #4ECDC4, #2A9D8F);
-        }
-
-        .challenge-reward {
-            font-size: 11px;
-            color: #FFD700;
-            text-align: right;
-        }
-
-        .challenge-status-icon {
-            float: right;
-            font-size: 16px;
-            margin-left: 8px;
+        .menu-challenge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
@@ -1762,17 +1641,6 @@
             <div class="stat-item"><span style="opacity:0.6">💀</span> <span id="killVal" class="hud-value">0</span>
             </div>
         </div>
-        <!-- DAILY CHALLENGES TRACKER -->
-        <div id="dailyChallengesPanel" class="daily-challenges-panel" style="display:none;">
-            <div class="daily-challenges-header">
-                <span class="daily-icon">📅</span>
-                <span class="daily-title">DAILY CHALLENGES</span>
-                <span id="dailyProgress" class="daily-progress">0/3</span>
-            </div>
-            <div id="dailyChallengesList" class="daily-challenges-list">
-                <!-- Challenges will be populated by JS -->
-            </div>
-        </div>
     </div>
 
     <div id="startScreen" class="screen">
@@ -1795,6 +1663,8 @@
             <button class="btn-play" id="startBtn">YALLA!</button>
             <div class="menu-buttons">
                 <button class="btn-menu" id="weaponsBtn">🔫 WEAPONS</button>
+                <button class="btn-menu" id="dailyBtn">📅 DAILY <span id="dailyBadge"
+                        style="color: #FFD700; display:none;">●</span></button>
                 <button class="btn-menu" id="questsBtn">📜 QUESTS <span id="questProgress"
                         style="color: #4ECDC4;">(0/100)</span></button>
                 <button class="btn-menu" id="leaderboardBtn">🏆 LEADERBOARD</button>
@@ -1802,6 +1672,21 @@
             <p class="controls-hint">Move with <span class="key">WASD</span> or <span class="key">Arrow Keys</span></p>
             <button class="btn-mute" id="muteBtn"
                 style="position: absolute; bottom: 20px; right: 20px; padding: 10px 15px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; font-size: 24px; color: #fff; transition: all 0.2s ease;">🔊</button>
+        </div>
+    </div>
+
+    <!-- DAILY CHALLENGES SCREEN -->
+    <div id="dailyScreen" class="screen hidden">
+        <div class="screen-content" style="max-width: 600px;">
+            <h2 class="weapon-select-title">📅 DAILY CHALLENGES</h2>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 20px; text-align: center;">
+                Complete 3 challenges every day for bonus XP!
+            </p>
+            <div id="dailyChallengesContainer"
+                style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+                <!-- Challenges populated by JS -->
+            </div>
+            <button class="btn-back" id="dailyBackBtn">← BACK</button>
         </div>
     </div>
 
@@ -1882,9 +1767,11 @@
                 </div>
             </div>
             <button class="btn-retry" id="retryBtn">TRY AGAIN</button>
-            <button class="btn-retry" id="menuBtn"
-                style="margin-left: 15px; background: linear-gradient(135deg, #2A9D8F, #21867a);">↩ RETURN TO
-                MENU</button>
+            style="margin-left: 15px; background: linear-gradient(135deg, #2A9D8F, #21867a);">↩ RETURN TO
+            MENU</button>
+            <button class="btn-retry" id="shareBtn"
+                style="margin-top: 15px; width: 100%; background: linear-gradient(135deg, #FFD700, #FFA500); color: #333;">📤
+                SHARE SCORE</button>
         </div>
     </div>
 
@@ -2402,6 +2289,17 @@
             { id: 'hummus', icon: '🥣', name: 'Hummus Wave', desc: 'AOE attack that slows', rarity: 'epic', apply: P => P.weapons.hummus = true, unique: true },
             { id: 'shofar', icon: '📯', name: 'Shofar Blast', desc: 'Cone knockback attack', rarity: 'epic', apply: P => P.weapons.shofar = true, unique: true },
             { id: 'dreidel', icon: '🪀', name: 'Dreidel Shield', desc: 'Orbiting dreidels', rarity: 'epic', apply: P => P.weapons.dreidel = true, unique: true },
+            // NEW PREMIUM WEAPON UPGRADES
+            { id: 'kiddush', icon: '🍷', name: 'Kiddush Cup', desc: 'Holy healing burst', rarity: 'epic', apply: P => P.weapons.kiddush = true, unique: true },
+            { id: 'torah', icon: '📜', name: 'Torah Scroll', desc: 'Spinning sacred text', rarity: 'epic', apply: P => P.weapons.torah = true, unique: true },
+            { id: 'matzah', icon: '🫓', name: 'Matzah Shard', desc: 'Piercing shrapnel', rarity: 'epic', apply: P => P.weapons.matzah = true, unique: true },
+            { id: 'sufganiyah', icon: '🍩', name: 'Sufganiyah', desc: 'Explosive jelly bombs', rarity: 'epic', apply: P => P.weapons.sufganiyah = true, unique: true },
+            { id: 'etrog', icon: '🍋', name: 'Etrog & Lulav', desc: 'Whip attack', rarity: 'epic', apply: P => P.weapons.etrog = true, unique: true },
+            { id: 'flag', icon: '🇮🇱', name: 'Israeli Flag', desc: 'Laser beam', rarity: 'epic', apply: P => P.weapons.flag = true, unique: true },
+            { id: 'challa', icon: '🍞', name: 'Challa Boomerang', desc: 'Returning bread', rarity: 'epic', apply: P => P.weapons.challa = true, unique: true },
+            { id: 'tefillin', icon: '⛓️', name: 'Teffilin Chains', desc: 'Binding slow', rarity: 'epic', apply: P => P.weapons.tefillin = true, unique: true },
+            { id: 'havdalah', icon: '🕯️', name: 'Havdalah Candle', desc: 'Fire spiral', rarity: 'epic', apply: P => P.weapons.havdalah = true, unique: true },
+            { id: 'maccabee', icon: '⚔️', name: 'Maccabee Sword', desc: 'Legendary melee', rarity: 'legendary', apply: P => P.weapons.maccabee = true, unique: true },
             { id: 'revive', icon: '✨', name: 'Resurrection', desc: 'Revive once with 50% HP', rarity: 'legendary', apply: P => P.revives++, unique: true },
         ];
 
@@ -2595,6 +2493,17 @@
             { id: 'krav', icon: '🥊', name: 'Krav Maga', desc: 'Melee dash attack', unlockXP: 9000 },
             { id: 'arak', icon: '🍶', name: 'Arak Fire', desc: 'Damage trail', unlockXP: 12000 },
             { id: 'golem', icon: '🗿', name: 'Golem Summon', desc: 'AI companion', unlockXP: 16000 },
+            // NEW PREMIUM WEAPONS
+            { id: 'kiddush', icon: '🍷', name: 'Kiddush Cup', desc: 'Holy healing burst', unlockXP: 21000 },
+            { id: 'torah', icon: '📜', name: 'Torah Scroll', desc: 'Spinning sacred text', unlockXP: 27000 },
+            { id: 'matzah', icon: '🫓', name: 'Matzah Shard', desc: 'Piercing shrapnel', unlockXP: 34000 },
+            { id: 'sufganiyah', icon: '🍩', name: 'Sufganiyah', desc: 'Explosive jelly bombs', unlockXP: 42000 },
+            { id: 'etrog', icon: '🍋', name: 'Etrog & Lulav', desc: 'Whip attack', unlockXP: 51000 },
+            { id: 'flag', icon: '🇮🇱', name: 'Israeli Flag', desc: 'Laser beam', unlockXP: 61000 },
+            { id: 'challa', icon: '🍞', name: 'Challa Boomerang', desc: 'Returning bread', unlockXP: 72000 },
+            { id: 'tefillin', icon: '⛓️', name: 'Teffilin Chains', desc: 'Binding slow', unlockXP: 84000 },
+            { id: 'havdalah', icon: '🕯️', name: 'Havdalah Candle', desc: 'Fire spiral', unlockXP: 97000 },
+            { id: 'maccabee', icon: '⚔️', name: 'Maccabee Sword', desc: 'Legendary melee', unlockXP: 120000 },
         ];
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2808,54 +2717,54 @@
         }
 
         function renderDailyChallenges() {
-            const panel = document.getElementById('dailyChallengesPanel');
-            const list = document.getElementById('dailyChallengesList');
-            const progressEl = document.getElementById('dailyProgress');
-
-            if (!panel || !list) return;
+            const container = document.getElementById('dailyChallengesContainer');
+            const badge = document.getElementById('dailyBadge');
 
             const challenges = generateDailyChallenges();
-
-            // Show panel
-            panel.style.display = 'block';
-
-            // Update progress
             const completedCount = challenges.completed.length;
-            progressEl.textContent = `${completedCount}/3`;
 
-            // Build challenge items
-            list.innerHTML = challenges.challenges.map((challenge, index) => {
+            // Show badge if challenges available
+            if (badge) {
+                badge.style.display = completedCount < 3 ? 'inline' : 'none';
+            }
+
+            if (!container) return;
+
+            // Build challenge cards for main menu
+            container.innerHTML = challenges.challenges.map((challenge) => {
                 const isCompleted = challenges.completed.includes(challenge.id);
 
-                let currentValue = 0;
-                switch (challenge.stat) {
-                    case 'sessionKills': currentValue = kills || 0; break;
-                    case 'sessionTime': currentValue = Math.floor(gameTime || 0); break;
-                    case 'sessionLevel': currentValue = player ? player.level : 1; break;
-                    case 'sessionBestCombo': currentValue = comboSystem ? comboSystem.bestCombo : 0; break;
-                    case 'xpCollected': currentValue = sessionStats ? (sessionStats.xpGemsCollected || 0) : 0; break;
-                    case 'noDamageTime': currentValue = Math.floor(noDamageTime || 0); break;
-                    case 'criticalHits': currentValue = sessionStats ? (sessionStats.criticalHits || 0) : 0; break;
-                    case 'upgradesTaken': currentValue = sessionStats ? (sessionStats.upgrades || 0) : 0; break;
-                    case 'killsPig': currentValue = sessionStats && sessionStats.killsByType ? (sessionStats.killsByType['Pig'] || 0) : 0; break;
-                    case 'bossKills': currentValue = sessionStats ? (sessionStats.bossKills || 0) : 0; break;
-                    default: currentValue = 0;
-                }
-
+                // Get current progress from last session or 0
+                const savedProgress = localStorage.getItem(`challenge_${challenge.id}_progress`) || 0;
+                const currentValue = parseInt(savedProgress) || 0;
                 const progress = Math.min(currentValue / challenge.target, 1);
                 const progressPercent = Math.floor(progress * 100);
 
                 return `
-                    <div class="daily-challenge-item ${isCompleted ? 'completed' : ''}">
-                        <div class="challenge-name">
-                            ${isCompleted ? '✅' : '🎯'} ${challenge.name}
+                    <div class="menu-challenge-card ${isCompleted ? 'completed' : ''}" 
+                         style="background: ${isCompleted ? 'rgba(78,205,196,0.15)' : 'rgba(255,255,255,0.08)'}; 
+                                border: 2px solid ${isCompleted ? '#4ECDC4' : 'rgba(255,255,255,0.15)'}; 
+                                border-radius: 16px; padding: 20px; text-align: left;
+                                transition: all 0.3s ease;
+                                ${isCompleted ? 'opacity: 0.7;' : ''}">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="font-family: 'Secular One', sans-serif; font-size: 18px; color: ${isCompleted ? '#4ECDC4' : '#fff'};">
+                                ${isCompleted ? '✅' : '🎯'} ${challenge.name}
+                            </div>
+                            <div style="color: #FFD700; font-size: 14px; font-weight: 600;">
+                                +${challenge.reward} XP
+                            </div>
                         </div>
-                        <div class="challenge-desc">${challenge.desc}</div>
-                        <div class="challenge-progress-bar">
-                            <div class="challenge-progress-fill" style="width: ${progressPercent}%"></div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 12px;">
+                            ${challenge.desc}
                         </div>
-                        <div class="challenge-reward">
-                            ${isCompleted ? '✓ COMPLETE' : `${currentValue}/${challenge.target} • +${challenge.reward} XP`}
+                        <div style="height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progressPercent}%; 
+                                        background: ${isCompleted ? 'linear-gradient(90deg, #4ECDC4, #2A9D8F)' : 'linear-gradient(90deg, #FF6B35, #FF8C42)'}; 
+                                        border-radius: 4px; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="text-align: right; margin-top: 8px; font-size: 13px; color: ${isCompleted ? '#4ECDC4' : 'rgba(255,255,255,0.5)'};">
+                            ${isCompleted ? '✓ COMPLETED' : `${currentValue}/${challenge.target}`}
                         </div>
                     </div>
                 `;
@@ -3063,6 +2972,36 @@
         function drawPlayer(x, y, size, walkCycle, facingRight, invTime, characterId = 'beachBro') {
             ctx.save();
             ctx.translate(x, y);
+
+            // ══════ MACCABEE FURY AURA ══════
+            // Visual effect when the Maccabee sword is active/upgraded
+            if (player.weapons.maccabee) {
+                const furyPulse = Math.sin(Date.now() / 200) * 0.2 + 0.8;
+                const auraSize = size * 1.5;
+
+                // Outer glow
+                const grad = ctx.createRadialGradient(0, 0, size * 0.5, 0, 0, auraSize);
+                grad.addColorStop(0, 'rgba(0, 255, 255, 0)');
+                grad.addColorStop(0.5, `rgba(0, 200, 255, ${0.15 * furyPulse})`);
+                grad.addColorStop(1, 'rgba(0, 100, 255, 0)');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner electric accents
+                if (Math.random() > 0.7) {
+                    ctx.strokeStyle = '#00FFFF';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = size * 0.8;
+                    ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                    ctx.lineTo(Math.cos(angle) * (r + 10), Math.sin(angle) * (r + 10));
+                    ctx.stroke();
+                }
+            }
             if (!facingRight) ctx.scale(-1, 1);
 
             // Get character data
@@ -4850,886 +4789,642 @@
         // ═══════════════════════════════════════════════════════════════════
         // DRAW WORLD OBJECT - TRUE TOP-DOWN Tel Aviv Beach Objects
         // ═══════════════════════════════════════════════════════════════════
+        // A1 EMOJI RENDERING SYSTEM - Professional Visual Quality
+        // ═══════════════════════════════════════════════════════════════════
+        const WORLD_OBJECT_EMOJIS = {
+            palmTree: ['🌴', '🌳', '🌲'],
+            umbrella: ['🏖️', '⛱️', '🏝️'],
+            beachChair: ['🪑', '🛋️', '🩴'],
+            lifeguardTower: ['🗼', '🏰', '🏛️'],
+            falafelStand: ['🥙', '🌯', '🍽️'],
+            surfboard: ['🏄', '🏄‍♂️', '🏄‍♀️'],
+            towel: ['🧺', '🛏️', '📿'],
+            cooler: ['🧊', '📦', '🎒'],
+            volleyballNet: ['🏐', '🥅', '🏟️'],
+            sandcastle: ['🏰', '🏯', '🦀'],
+            shell: ['🐚', '🦪', '🐌'],
+            matkot: ['🏓', '🎾', '🏸'],
+            israelFlag: ['🇮🇱', '🚩', '🏴'],
+            sunbather: ['😎', '🧘', '🤿'],
+            hamsa: ['👋', '🪬', '🧿'],
+            starDecoration: ['⭐', '🌟', '✨'],
+            shukStall: ['🏪', '🏭', '🏬'],
+            etrog: ['🍋', '🍊', '🥝'],
+            menorah: ['🕎', '🕯️', '🏮'],
+            torah: ['📜', '📖', '📚'],
+            synagogue: ['🕍', '🕌', '⛪'],
+            crate: ['📦', '🗳️', '📮'],
+            bench: ['🪑', '🛋️', '🪵'],
+            fountain: ['⛲', '🌊', '💧']
+        };
+
+        function drawEmojiObject(obj, sx, sy) {
+            const emoji = WORLD_OBJECT_EMOJIS[obj.type]?.[0] || '📦';
+            const size = obj.size || 48;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(sx + 4, sy + 4, size * 0.4, size * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Emoji text
+            ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, sx, sy);
+        }
+
         function drawWorldObject(obj) {
             const sx = obj.x - camera.x;
             const sy = obj.y - camera.y;
 
             // Culling
-            if (sx < -300 || sx > W + 300 || sy < -300 || sy > H + 300) return;
+            if (sx < -100 || sx > W + 100 || sy < -100 || sy > H + 100) return;
 
-            ctx.save();
-            ctx.translate(sx, sy);
+            // A1: Use professional emoji rendering for all objects
+            drawEmojiObject(obj, sx, sy);
+        }
 
-            const time = Date.now() / 1000;
+        // ═══════════════════════════════════════════════════════════════════
+        // DRAW BACKGROUND - Immersive Tel Aviv Beach
+        // ═══════════════════════════════════════════════════════════════════
 
-            switch (obj.type) {
-                case 'palmTree':
-                    // TRUE TOP-DOWN: Circular trunk center with fronds radiating outward as leaf shadows
-                    const sway = Math.sin(time * 1.2 + obj.sway) * 3;
-                    const h = obj.height;
-                    const frondRadius = h * 0.6;
+        // (Old switch statement code removed - using emoji system instead)
 
-                    // Shadow cast by fronds (offset to simulate sun angle)
-                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-                    ctx.beginPath();
-                    ctx.ellipse(15, 20, frondRadius * 0.9, frondRadius * 0.7, 0.3, 0, Math.PI * 2);
-                    ctx.fill();
+        ctx.fillStyle = '#FFD700';
 
-                    // Fronds radiating outward (top-down view - like a star)
-                    for (let i = 0; i < 9; i++) {
-                        const angle = (i / 9) * Math.PI * 2 + sway * 0.05;
-                        const frondLen = frondRadius * (0.8 + (i % 2) * 0.3);
-                        const frondSway = Math.sin(time * 2 + i) * 3;
+        // Awning stripes
+        ctx.fillStyle = '#FF6B00';
+        for (let s = -45; s < 45; s += 18) {
+            ctx.fillRect(s, -30, 9, 60);
+        }
 
-                        // Frond shape (elongated leaf from center)
-                        const frondGrad = ctx.createLinearGradient(0, 0, Math.cos(angle) * frondLen, Math.sin(angle) * frondLen);
-                        frondGrad.addColorStop(0, '#2E8B57');
-                        frondGrad.addColorStop(0.5, '#228B22');
-                        frondGrad.addColorStop(1, '#1E6B1E');
-                        ctx.fillStyle = frondGrad;
+        // Awning edge scallops
+        ctx.fillStyle = '#FFD700';
+        for (let sc = -40; sc < 45; sc += 12) {
+            ctx.beginPath();
+            ctx.arc(sc, 30, 6, 0, Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sc, -30, 6, Math.PI, Math.PI * 2);
+            ctx.fill();
+        }
 
-                        ctx.beginPath();
-                        const tipX = Math.cos(angle) * frondLen + frondSway * Math.cos(angle + Math.PI / 2);
-                        const tipY = Math.sin(angle) * frondLen + frondSway * Math.sin(angle + Math.PI / 2);
-                        const side1X = Math.cos(angle + 0.4) * frondLen * 0.3;
-                        const side1Y = Math.sin(angle + 0.4) * frondLen * 0.3;
-                        const side2X = Math.cos(angle - 0.4) * frondLen * 0.3;
-                        const side2Y = Math.sin(angle - 0.4) * frondLen * 0.3;
+        // Cart visible at edges (peeking from under awning)
+        ctx.fillStyle = '#E8E8E8';
+        ctx.fillRect(-48, -33, 6, 66);
+        ctx.fillRect(42, -33, 6, 66);
 
-                        ctx.moveTo(0, 0);
-                        ctx.quadraticCurveTo(side1X, side1Y, tipX, tipY);
-                        ctx.quadraticCurveTo(side2X, side2Y, 0, 0);
-                        ctx.fill();
+        // Text on awning
+        ctx.fillStyle = '#8B4513';
+        ctx.font = 'bold 14px Heebo';
+        ctx.textAlign = 'center';
+        ctx.fillText('FALAFEL', 0, 5);
 
-                        // Frond spine
-                        ctx.strokeStyle = '#1E5E1E';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(tipX * 0.9, tipY * 0.9);
-                        ctx.stroke();
-
-                        // Leaf detail lines
-                        ctx.strokeStyle = 'rgba(30,70,30,0.4)';
-                        ctx.lineWidth = 1;
-                        for (let l = 0.3; l < 0.9; l += 0.15) {
-                            const lx = Math.cos(angle) * frondLen * l;
-                            const ly = Math.sin(angle) * frondLen * l;
-                            ctx.beginPath();
-                            ctx.moveTo(lx, ly);
-                            ctx.lineTo(lx + Math.cos(angle + Math.PI / 2) * 8, ly + Math.sin(angle + Math.PI / 2) * 8);
-                            ctx.moveTo(lx, ly);
-                            ctx.lineTo(lx + Math.cos(angle - Math.PI / 2) * 8, ly + Math.sin(angle - Math.PI / 2) * 8);
-                            ctx.stroke();
-                        }
-                    }
-
-                    // Center trunk (top view - circular)
-                    const trunkGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
-                    trunkGrad.addColorStop(0, '#8B7355');
-                    trunkGrad.addColorStop(0.5, '#6B5344');
-                    trunkGrad.addColorStop(1, '#5D4037');
-                    ctx.fillStyle = trunkGrad;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 10, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Trunk ring texture
-                    ctx.strokeStyle = 'rgba(93,64,55,0.5)';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 6, 0, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
-                    ctx.stroke();
-
-                    // Coconuts clustered at center
-                    ctx.fillStyle = '#5D4037';
-                    for (let c = 0; c < 3; c++) {
-                        const ca = (c / 3) * Math.PI * 2 + time * 0.1;
-                        ctx.beginPath();
-                        ctx.arc(Math.cos(ca) * 5, Math.sin(ca) * 5, 4, 0, Math.PI * 2);
-                        ctx.fill();
-                        // Coconut highlight
-                        ctx.fillStyle = '#7B6355';
-                        ctx.beginPath();
-                        ctx.arc(Math.cos(ca) * 5 - 1, Math.sin(ca) * 5 - 1, 1.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#5D4037';
-                    }
-                    break;
-
-                case 'umbrella':
-                    // TRUE TOP-DOWN: Full circular canopy from above with radial segments
-
-                    // Shadow offset (sun angle)
-                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-                    ctx.beginPath();
-                    ctx.ellipse(12, 12, 42, 38, 0.2, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Full circular umbrella canopy
-                    const umbRadius = 40;
-                    const umbGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, umbRadius);
-                    umbGrad.addColorStop(0, lighten(obj.color, 40));
-                    umbGrad.addColorStop(0.3, lighten(obj.color, 20));
-                    umbGrad.addColorStop(0.7, obj.color);
-                    umbGrad.addColorStop(1, darken(obj.color, 15));
-                    ctx.fillStyle = umbGrad;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, umbRadius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Radial segments (8 alternating colored segments)
-                    for (let seg = 0; seg < 8; seg++) {
-                        if (seg % 2 === 0) {
-                            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-                            ctx.beginPath();
-                            ctx.moveTo(0, 0);
-                            ctx.arc(0, 0, umbRadius - 2, (seg / 8) * Math.PI * 2, ((seg + 1) / 8) * Math.PI * 2);
-                            ctx.closePath();
-                            ctx.fill();
-                        }
-                    }
-
-                    // Umbrella ribs
-                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-                    ctx.lineWidth = 1.5;
-                    for (let r = 0; r < 8; r++) {
-                        const ribAngle = (r / 8) * Math.PI * 2;
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(Math.cos(ribAngle) * umbRadius, Math.sin(ribAngle) * umbRadius);
-                        ctx.stroke();
-                    }
-
-                    // Scalloped edge
-                    ctx.strokeStyle = darken(obj.color, 30);
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    for (let s = 0; s < 16; s++) {
-                        const a1 = (s / 16) * Math.PI * 2;
-                        const a2 = ((s + 0.5) / 16) * Math.PI * 2;
-                        const a3 = ((s + 1) / 16) * Math.PI * 2;
-                        const r1 = umbRadius;
-                        const r2 = umbRadius - 4;
-                        if (s === 0) ctx.moveTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
-                        ctx.quadraticCurveTo(Math.cos(a2) * r2, Math.sin(a2) * r2, Math.cos(a3) * r1, Math.sin(a3) * r1);
-                    }
-                    ctx.stroke();
-
-                    // Center pole cap
-                    ctx.fillStyle = '#DEB887';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#C4A67C';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-
-                case 'beachChair':
-                    ctx.rotate(obj.rot);
-                    // TRUE TOP-DOWN: Rectangular seat from above with frame
-
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-                    ctx.beginPath();
-                    ctx.ellipse(8, 8, 28, 20, 0.2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Chair frame (aluminum tubes)
-                    ctx.strokeStyle = '#C0C0C0';
-                    ctx.lineWidth = 4;
-                    // Side rails
-                    ctx.beginPath();
-                    ctx.moveTo(-18, -28);
-                    ctx.lineTo(-18, 28);
-                    ctx.moveTo(18, -28);
-                    ctx.lineTo(18, 28);
-                    ctx.stroke();
-                    // Cross bars
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.moveTo(-18, -25);
-                    ctx.lineTo(18, -25);
-                    ctx.moveTo(-18, 25);
-                    ctx.lineTo(18, 25);
-                    ctx.moveTo(-18, 0);
-                    ctx.lineTo(18, 0);
-                    ctx.stroke();
-
-                    // Fabric seat (top view)
-                    ctx.fillStyle = obj.color;
-                    ctx.fillRect(-15, -22, 30, 44);
-
-                    // Fabric stripes
-                    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                    for (let s = -20; s < 25; s += 8) {
-                        ctx.fillRect(-15, s, 30, 4);
-                    }
-
-                    // Frame end caps
-                    ctx.fillStyle = '#888';
-                    [[-18, -28], [-18, 28], [18, -28], [18, 28]].forEach(([fx, fy]) => {
-                        ctx.beginPath();
-                        ctx.arc(fx, fy, 3, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    break;
-
-                case 'lifeguardTower':
-                    // TRUE TOP-DOWN: Square roof from above with shadow cast
-
-                    // Large shadow cast by tower
-                    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-                    ctx.beginPath();
-                    ctx.moveTo(25, 15);
-                    ctx.lineTo(80, 50);
-                    ctx.lineTo(65, 75);
-                    ctx.lineTo(10, 40);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Roof (square with slight pyramid - top down)
-                    const roofGrad = ctx.createLinearGradient(-35, -35, 35, 35);
-                    roofGrad.addColorStop(0, '#FF4444');
-                    roofGrad.addColorStop(0.5, '#E63946');
-                    roofGrad.addColorStop(1, '#CC2233');
-                    ctx.fillStyle = roofGrad;
-                    ctx.beginPath();
-                    ctx.rect(-35, -35, 70, 70);
-                    ctx.fill();
-
-                    // Roof pyramid lines (indicates 3D shape)
-                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(-35, -35);
-                    ctx.lineTo(0, 0);
-                    ctx.moveTo(35, -35);
-                    ctx.lineTo(0, 0);
-                    ctx.moveTo(-35, 35);
-                    ctx.lineTo(0, 0);
-                    ctx.moveTo(35, 35);
-                    ctx.lineTo(0, 0);
-                    ctx.stroke();
-
-                    // Center peak point
-                    ctx.fillStyle = '#FFD700';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 6, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Flag pole from center
-                    ctx.fillStyle = '#333';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Flag (waving)
-                    const flagWave = Math.sin(time * 3) * 4;
-                    ctx.fillStyle = '#E63946';
-                    ctx.beginPath();
-                    ctx.moveTo(0, -5);
-                    ctx.quadraticCurveTo(10 + flagWave, -10, 20, -8 + flagWave);
-                    ctx.lineTo(18, 2 + flagWave);
-                    ctx.quadraticCurveTo(8 + flagWave * 0.5, 0, 0, 3);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Roof edge highlight
-                    ctx.strokeStyle = '#FF6666';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(-35, -35, 70, 70);
-                    break;
-
-                case 'falafelStand':
-                    // TRUE TOP-DOWN: Rectangular awning from above
-
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-                    ctx.beginPath();
-                    ctx.ellipse(15, 15, 50, 35, 0.2, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Awning (rectangular, striped)
-                    ctx.fillStyle = '#FFD700';
-                    ctx.fillRect(-45, -30, 90, 60);
-
-                    // Awning stripes
-                    ctx.fillStyle = '#FF6B00';
-                    for (let s = -45; s < 45; s += 18) {
-                        ctx.fillRect(s, -30, 9, 60);
-                    }
-
-                    // Awning edge scallops
-                    ctx.fillStyle = '#FFD700';
-                    for (let sc = -40; sc < 45; sc += 12) {
-                        ctx.beginPath();
-                        ctx.arc(sc, 30, 6, 0, Math.PI);
-                        ctx.fill();
-                        ctx.beginPath();
-                        ctx.arc(sc, -30, 6, Math.PI, Math.PI * 2);
-                        ctx.fill();
-                    }
-
-                    // Cart visible at edges (peeking from under awning)
-                    ctx.fillStyle = '#E8E8E8';
-                    ctx.fillRect(-48, -33, 6, 66);
-                    ctx.fillRect(42, -33, 6, 66);
-
-                    // Text on awning
-                    ctx.fillStyle = '#8B4513';
-                    ctx.font = 'bold 14px Heebo';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('FALAFEL', 0, 5);
-
-                    // Falafel balls visible on cart
-                    ctx.fillStyle = '#8B6914';
-                    for (let f = 0; f < 6; f++) {
-                        const fx = -25 + (f % 3) * 25;
-                        const fy = -15 + Math.floor(f / 3) * 20;
-                        ctx.beginPath();
-                        ctx.arc(fx, fy, 5, 0, Math.PI * 2);
-                        ctx.fill();
-                        // Texture dots
-                        ctx.fillStyle = '#6B5510';
-                        ctx.beginPath();
-                        ctx.arc(fx - 1, fy - 1, 1, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#8B6914';
-                    }
-                    break;
+        // Falafel balls visible on cart
+        ctx.fillStyle = '#8B6914';
+        for (let f = 0; f < 6; f++) {
+            const fx = -25 + (f % 3) * 25;
+            const fy = -15 + Math.floor(f / 3) * 20;
+            ctx.beginPath();
+            ctx.arc(fx, fy, 5, 0, Math.PI * 2);
+            ctx.fill();
+            // Texture dots
+            ctx.fillStyle = '#6B5510';
+            ctx.beginPath();
+            ctx.arc(fx - 1, fy - 1, 1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#8B6914';
+        }
+        break;
 
                 case 'surfboard':
-                    ctx.rotate(obj.rot);
-                    // Surfboard is already fairly top-down (lying flat) - minor adjustments
+        ctx.rotate(obj.rot);
+        // Surfboard is already fairly top-down (lying flat) - minor adjustments
 
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                    ctx.beginPath();
-                    ctx.ellipse(4, 4, 12, 42, 0, 0, Math.PI * 2);
-                    ctx.fill();
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.ellipse(4, 4, 12, 42, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Board
-                    const boardGrad = ctx.createLinearGradient(-12, 0, 12, 0);
-                    boardGrad.addColorStop(0, darken(obj.color, 15));
-                    boardGrad.addColorStop(0.5, obj.color);
-                    boardGrad.addColorStop(1, darken(obj.color, 15));
-                    ctx.fillStyle = boardGrad;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 10, 40, 0, 0, Math.PI * 2);
-                    ctx.fill();
+        // Board
+        const boardGrad = ctx.createLinearGradient(-12, 0, 12, 0);
+        boardGrad.addColorStop(0, darken(obj.color, 15));
+        boardGrad.addColorStop(0.5, obj.color);
+        boardGrad.addColorStop(1, darken(obj.color, 15));
+        ctx.fillStyle = boardGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 10, 40, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Board outline
-                    ctx.strokeStyle = darken(obj.color, 35);
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+        // Board outline
+        ctx.strokeStyle = darken(obj.color, 35);
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-                    // Center stripe
-                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                    ctx.fillRect(-2, -35, 4, 70);
+        // Center stripe
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillRect(-2, -35, 4, 70);
 
-                    // Nose and tail accents
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, -35, 6, 5, 0, 0, Math.PI * 2);
-                    ctx.fill();
+        // Nose and tail accents
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(0, -35, 6, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Fin (visible as small shape at tail)
-                    ctx.fillStyle = darken(obj.color, 40);
-                    ctx.beginPath();
-                    ctx.ellipse(0, 35, 4, 6, 0, 0, Math.PI * 2);
-                    ctx.fill();
+        // Fin (visible as small shape at tail)
+        ctx.fillStyle = darken(obj.color, 40);
+        ctx.beginPath();
+        ctx.ellipse(0, 35, 4, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Wax texture
-                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-                    for (let wx = -6; wx <= 6; wx += 4) {
-                        for (let wy = -20; wy <= 20; wy += 6) {
-                            ctx.beginPath();
-                            ctx.arc(wx + Math.sin(wy) * 2, wy, 1.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
-                    break;
+        // Wax texture
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        for (let wx = -6; wx <= 6; wx += 4) {
+            for (let wy = -20; wy <= 20; wy += 6) {
+                ctx.beginPath();
+                ctx.arc(wx + Math.sin(wy) * 2, wy, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        break;
 
                 case 'towel':
-                    ctx.rotate(obj.rot);
-                    // Towel is already top-down - keep as is with minor polish
+        ctx.rotate(obj.rot);
+        // Towel is already top-down - keep as is with minor polish
 
-                    // Slight shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-                    ctx.fillRect(-23, -38, 50, 80);
+        // Slight shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx.fillRect(-23, -38, 50, 80);
 
-                    // Towel fabric
-                    ctx.fillStyle = obj.color;
-                    ctx.fillRect(-25, -40, 50, 80);
+        // Towel fabric
+        ctx.fillStyle = obj.color;
+        ctx.fillRect(-25, -40, 50, 80);
 
-                    // Pattern
-                    if (obj.pattern === 'stripes') {
-                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                        for (let s = -35; s < 40; s += 10) {
-                            ctx.fillRect(-25, s, 50, 5);
-                        }
-                    } else if (obj.pattern === 'dots') {
-                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                        for (let dx = -15; dx <= 15; dx += 15) {
-                            for (let dy = -30; dy <= 30; dy += 15) {
-                                ctx.beginPath();
-                                ctx.arc(dx, dy, 3, 0, Math.PI * 2);
-                                ctx.fill();
-                            }
-                        }
-                    }
-
-                    // Fringe
-                    ctx.strokeStyle = darken(obj.color, 20);
-                    ctx.lineWidth = 1;
-                    for (let f = -23; f < 25; f += 4) {
-                        ctx.beginPath();
-                        ctx.moveTo(f, -40);
-                        ctx.lineTo(f + (Math.sin(f) * 2), -47);
-                        ctx.moveTo(f, 40);
-                        ctx.lineTo(f + (Math.sin(f) * 2), 47);
-                        ctx.stroke();
-                    }
-
-                    // Fabric wrinkle lines
-                    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        // Pattern
+        if (obj.pattern === 'stripes') {
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            for (let s = -35; s < 40; s += 10) {
+                ctx.fillRect(-25, s, 50, 5);
+            }
+        } else if (obj.pattern === 'dots') {
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            for (let dx = -15; dx <= 15; dx += 15) {
+                for (let dy = -30; dy <= 30; dy += 15) {
                     ctx.beginPath();
-                    ctx.moveTo(-20, -20);
-                    ctx.quadraticCurveTo(0, -15, 20, -20);
-                    ctx.moveTo(-20, 15);
-                    ctx.quadraticCurveTo(5, 20, 20, 15);
-                    ctx.stroke();
-                    break;
+                    ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Fringe
+        ctx.strokeStyle = darken(obj.color, 20);
+        ctx.lineWidth = 1;
+        for (let f = -23; f < 25; f += 4) {
+            ctx.beginPath();
+            ctx.moveTo(f, -40);
+            ctx.lineTo(f + (Math.sin(f) * 2), -47);
+            ctx.moveTo(f, 40);
+            ctx.lineTo(f + (Math.sin(f) * 2), 47);
+            ctx.stroke();
+        }
+
+        // Fabric wrinkle lines
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        ctx.beginPath();
+        ctx.moveTo(-20, -20);
+        ctx.quadraticCurveTo(0, -15, 20, -20);
+        ctx.moveTo(-20, 15);
+        ctx.quadraticCurveTo(5, 20, 20, 15);
+        ctx.stroke();
+        break;
 
                 case 'cooler':
-                    // TRUE TOP-DOWN: Lid rectangle with handle visible
+        // TRUE TOP-DOWN: Lid rectangle with handle visible
 
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-                    ctx.beginPath();
-                    ctx.ellipse(6, 6, 22, 16, 0.15, 0, Math.PI * 2);
-                    ctx.fill();
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.beginPath();
+        ctx.ellipse(6, 6, 22, 16, 0.15, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Cooler lid (top view)
-                    ctx.fillStyle = obj.color;
-                    ctx.beginPath();
-                    ctx.roundRect(-20, -15, 40, 30, 4);
-                    ctx.fill();
+        // Cooler lid (top view)
+        ctx.fillStyle = obj.color;
+        ctx.beginPath();
+        ctx.roundRect(-20, -15, 40, 30, 4);
+        ctx.fill();
 
-                    // Lid texture lines
-                    ctx.strokeStyle = darken(obj.color, 20);
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.roundRect(-20, -15, 40, 30, 4);
-                    ctx.stroke();
+        // Lid texture lines
+        ctx.strokeStyle = darken(obj.color, 20);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(-20, -15, 40, 30, 4);
+        ctx.stroke();
 
-                    // Lid ridge
-                    ctx.strokeStyle = lighten(obj.color, 20);
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.roundRect(-16, -11, 32, 22, 2);
-                    ctx.stroke();
+        // Lid ridge
+        ctx.strokeStyle = lighten(obj.color, 20);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-16, -11, 32, 22, 2);
+        ctx.stroke();
 
-                    // Handle
-                    ctx.fillStyle = '#222';
-                    ctx.beginPath();
-                    ctx.roundRect(-10, -4, 20, 8, 3);
-                    ctx.fill();
+        // Handle
+        ctx.fillStyle = '#222';
+        ctx.beginPath();
+        ctx.roundRect(-10, -4, 20, 8, 3);
+        ctx.fill();
 
-                    // Handle grip texture
-                    ctx.fillStyle = '#444';
-                    for (let hx = -6; hx <= 6; hx += 4) {
-                        ctx.fillRect(hx, -2, 2, 4);
-                    }
+        // Handle grip texture
+        ctx.fillStyle = '#444';
+        for (let hx = -6; hx <= 6; hx += 4) {
+            ctx.fillRect(hx, -2, 2, 4);
+        }
 
-                    // Latch hints on sides
-                    ctx.fillStyle = '#888';
-                    ctx.fillRect(-22, -3, 4, 6);
-                    ctx.fillRect(18, -3, 4, 6);
-                    break;
+        // Latch hints on sides
+        ctx.fillStyle = '#888';
+        ctx.fillRect(-22, -3, 4, 6);
+        ctx.fillRect(18, -3, 4, 6);
+        break;
 
                 case 'volleyballNet':
-                    // TRUE TOP-DOWN: Two circles (pole tops) with line between
+        // TRUE TOP-DOWN: Two circles (pole tops) with line between
 
-                    // Shadow of net
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    ctx.fillRect(-78, 8, 156, 12);
+        // Shadow of net
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(-78, 8, 156, 12);
 
-                    // Net from above (thin rectangle)
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                    ctx.fillRect(-77, -3, 154, 6);
+        // Net from above (thin rectangle)
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillRect(-77, -3, 154, 6);
 
-                    // Net mesh pattern (top view)
-                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-                    ctx.lineWidth = 1;
-                    for (let nx = -72; nx <= 72; nx += 12) {
-                        ctx.beginPath();
-                        ctx.moveTo(nx, -3);
-                        ctx.lineTo(nx, 3);
-                        ctx.stroke();
-                    }
+        // Net mesh pattern (top view)
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        for (let nx = -72; nx <= 72; nx += 12) {
+            ctx.beginPath();
+            ctx.moveTo(nx, -3);
+            ctx.lineTo(nx, 3);
+            ctx.stroke();
+        }
 
-                    // Pole tops (circles)
-                    ctx.fillStyle = '#222';
-                    ctx.beginPath();
-                    ctx.arc(-77, 0, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(77, 0, 6, 0, Math.PI * 2);
-                    ctx.fill();
+        // Pole tops (circles)
+        ctx.fillStyle = '#222';
+        ctx.beginPath();
+        ctx.arc(-77, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(77, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Pole cap detail
-                    ctx.fillStyle = '#FFD700';
-                    ctx.beginPath();
-                    ctx.arc(-77, 0, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(77, 0, 3, 0, Math.PI * 2);
-                    ctx.fill();
+        // Pole cap detail
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(-77, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(77, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Net tension lines
-                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([4, 4]);
-                    ctx.beginPath();
-                    ctx.moveTo(-77, 0);
-                    ctx.lineTo(-90, -15);
-                    ctx.moveTo(77, 0);
-                    ctx.lineTo(90, -15);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    break;
+        // Net tension lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(-77, 0);
+        ctx.lineTo(-90, -15);
+        ctx.moveTo(77, 0);
+        ctx.lineTo(90, -15);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        break;
 
                 case 'sandcastle':
-                    const sc = obj.size;
-                    // TRUE TOP-DOWN: Circular base with smaller tower circles on top
+        const sc = obj.size;
+        // TRUE TOP-DOWN: Circular base with smaller tower circles on top
 
-                    // Main base shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                    ctx.beginPath();
-                    ctx.ellipse(5, 5, sc * 1.1, sc * 0.9, 0, 0, Math.PI * 2);
-                    ctx.fill();
+        // Main base shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.ellipse(5, 5, sc * 1.1, sc * 0.9, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Base mound (circular from above)
-                    ctx.fillStyle = '#D2B48C';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sc, 0, Math.PI * 2);
-                    ctx.fill();
+        // Base mound (circular from above)
+        ctx.fillStyle = '#D2B48C';
+        ctx.beginPath();
+        ctx.arc(0, 0, sc, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Sandy texture on base
-                    ctx.fillStyle = 'rgba(160,120,80,0.3)';
-                    for (let t = 0; t < 12; t++) {
-                        const ta = (t / 12) * Math.PI * 2;
-                        const tr = sc * 0.5 + Math.sin(t * 3) * sc * 0.3;
-                        ctx.beginPath();
-                        ctx.arc(Math.cos(ta) * tr, Math.sin(ta) * tr, 3, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
+        // Sandy texture on base
+        ctx.fillStyle = 'rgba(160,120,80,0.3)';
+        for (let t = 0; t < 12; t++) {
+            const ta = (t / 12) * Math.PI * 2;
+            const tr = sc * 0.5 + Math.sin(t * 3) * sc * 0.3;
+            ctx.beginPath();
+            ctx.arc(Math.cos(ta) * tr, Math.sin(ta) * tr, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-                    // Main central tower (circle from above)
-                    ctx.fillStyle = '#DEB887';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sc * 0.4, 0, Math.PI * 2);
-                    ctx.fill();
+        // Main central tower (circle from above)
+        ctx.fillStyle = '#DEB887';
+        ctx.beginPath();
+        ctx.arc(0, 0, sc * 0.4, 0, Math.PI * 2);
+        ctx.fill();
 
-                    // Tower top detail
-                    ctx.strokeStyle = '#C4A070';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sc * 0.35, 0, Math.PI * 2);
-                    ctx.stroke();
+        // Tower top detail
+        ctx.strokeStyle = '#C4A070';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, sc * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
 
-                    // Battlements on main tower (small rectangles around edge)
-                    ctx.fillStyle = '#C9A86C';
-                    for (let b = 0; b < 6; b++) {
-                        const ba = (b / 6) * Math.PI * 2;
-                        const bx = Math.cos(ba) * sc * 0.35;
-                        const by = Math.sin(ba) * sc * 0.35;
-                        ctx.fillRect(bx - 3, by - 3, 6, 6);
-                    }
+        // Battlements on main tower (small rectangles around edge)
+        ctx.fillStyle = '#C9A86C';
+        for (let b = 0; b < 6; b++) {
+            const ba = (b / 6) * Math.PI * 2;
+            const bx = Math.cos(ba) * sc * 0.35;
+            const by = Math.sin(ba) * sc * 0.35;
+            ctx.fillRect(bx - 3, by - 3, 6, 6);
+        }
 
-                    // Corner towers (4 smaller circles)
-                    const cornerAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
-                    cornerAngles.forEach((ca, i) => {
-                        const cx = Math.cos(ca) * sc * 0.7;
-                        const cy = Math.sin(ca) * sc * 0.7;
+        // Corner towers (4 smaller circles)
+        const cornerAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
+        cornerAngles.forEach((ca, i) => {
+            const cx = Math.cos(ca) * sc * 0.7;
+            const cy = Math.sin(ca) * sc * 0.7;
 
-                        ctx.fillStyle = '#DEB887';
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, sc * 0.2, 0, Math.PI * 2);
-                        ctx.fill();
+            ctx.fillStyle = '#DEB887';
+            ctx.beginPath();
+            ctx.arc(cx, cy, sc * 0.2, 0, Math.PI * 2);
+            ctx.fill();
 
-                        ctx.strokeStyle = '#C4A070';
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
+            ctx.strokeStyle = '#C4A070';
+            ctx.lineWidth = 1;
+            ctx.stroke();
 
-                        // Mini flags
-                        ctx.fillStyle = ['#E63946', '#4169E1', '#228B22', '#FFD700'][i];
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy - sc * 0.15);
-                        ctx.lineTo(cx + 8, cy - sc * 0.1);
-                        ctx.lineTo(cx, cy - sc * 0.05);
-                        ctx.closePath();
-                        ctx.fill();
+            // Mini flags
+            ctx.fillStyle = ['#E63946', '#4169E1', '#228B22', '#FFD700'][i];
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - sc * 0.15);
+            ctx.lineTo(cx + 8, cy - sc * 0.1);
+            ctx.lineTo(cx, cy - sc * 0.05);
+            ctx.closePath();
+            ctx.fill();
 
-                        // Flag pole
-                        ctx.strokeStyle = '#8B4513';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy);
-                        ctx.lineTo(cx, cy - sc * 0.18);
-                        ctx.stroke();
-                    });
+            // Flag pole
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx, cy - sc * 0.18);
+            ctx.stroke();
+        });
 
-                    // Moat suggestion (dashed circle)
-                    ctx.strokeStyle = 'rgba(100,150,200,0.3)';
-                    ctx.lineWidth = 3;
-                    ctx.setLineDash([5, 5]);
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sc * 1.1, 0, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    break;
+        // Moat suggestion (dashed circle)
+        ctx.strokeStyle = 'rgba(100,150,200,0.3)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(0, 0, sc * 1.1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        break;
 
                 case 'shell':
-                    ctx.rotate(obj.rot);
-                    const shellS = obj.size;
-                    // Shells are small and already essentially top-down - keep as is
+        ctx.rotate(obj.rot);
+        const shellS = obj.size;
+        // Shells are small and already essentially top-down - keep as is
 
-                    if (obj.variant === 0) {
-                        // Spiral shell
-                        ctx.fillStyle = '#FFF5EE';
-                        ctx.beginPath();
-                        ctx.ellipse(0, 0, shellS, shellS * 0.6, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.strokeStyle = '#DEB887';
-                        ctx.lineWidth = 1;
-                        for (let sp = 0; sp < 5; sp++) {
-                            ctx.beginPath();
-                            ctx.arc(shellS * 0.2, 0, shellS * 0.3 + sp * 2, 0, Math.PI * 1.5);
-                            ctx.stroke();
-                        }
-                    } else if (obj.variant === 1) {
-                        // Scallop shell
-                        ctx.fillStyle = '#FFE4C4';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, shellS, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.strokeStyle = '#DEB887';
-                        ctx.lineWidth = 1;
-                        for (let r = 0; r < 8; r++) {
-                            const rAngle = (r / 8) * Math.PI * 2;
-                            ctx.beginPath();
-                            ctx.moveTo(0, 0);
-                            ctx.lineTo(Math.cos(rAngle) * shellS, Math.sin(rAngle) * shellS);
-                            ctx.stroke();
-                        }
-                    } else {
-                        // Starfish
-                        ctx.fillStyle = '#FF6B6B';
-                        for (let arm = 0; arm < 5; arm++) {
-                            const armAngle = (arm / 5) * Math.PI * 2 - Math.PI / 2;
-                            ctx.beginPath();
-                            ctx.moveTo(0, 0);
-                            ctx.lineTo(
-                                Math.cos(armAngle - 0.2) * shellS * 0.3,
-                                Math.sin(armAngle - 0.2) * shellS * 0.3
-                            );
-                            ctx.lineTo(
-                                Math.cos(armAngle) * shellS,
-                                Math.sin(armAngle) * shellS
-                            );
-                            ctx.lineTo(
-                                Math.cos(armAngle + 0.2) * shellS * 0.3,
-                                Math.sin(armAngle + 0.2) * shellS * 0.3
-                            );
-                            ctx.fill();
-                        }
-                        // Starfish center
-                        ctx.fillStyle = '#FF8888';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, shellS * 0.2, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    break;
+        if (obj.variant === 0) {
+            // Spiral shell
+            ctx.fillStyle = '#FFF5EE';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, shellS, shellS * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#DEB887';
+            ctx.lineWidth = 1;
+            for (let sp = 0; sp < 5; sp++) {
+                ctx.beginPath();
+                ctx.arc(shellS * 0.2, 0, shellS * 0.3 + sp * 2, 0, Math.PI * 1.5);
+                ctx.stroke();
+            }
+        } else if (obj.variant === 1) {
+            // Scallop shell
+            ctx.fillStyle = '#FFE4C4';
+            ctx.beginPath();
+            ctx.arc(0, 0, shellS, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#DEB887';
+            ctx.lineWidth = 1;
+            for (let r = 0; r < 8; r++) {
+                const rAngle = (r / 8) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(rAngle) * shellS, Math.sin(rAngle) * shellS);
+                ctx.stroke();
+            }
+        } else {
+            // Starfish
+            ctx.fillStyle = '#FF6B6B';
+            for (let arm = 0; arm < 5; arm++) {
+                const armAngle = (arm / 5) * Math.PI * 2 - Math.PI / 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(
+                    Math.cos(armAngle - 0.2) * shellS * 0.3,
+                    Math.sin(armAngle - 0.2) * shellS * 0.3
+                );
+                ctx.lineTo(
+                    Math.cos(armAngle) * shellS,
+                    Math.sin(armAngle) * shellS
+                );
+                ctx.lineTo(
+                    Math.cos(armAngle + 0.2) * shellS * 0.3,
+                    Math.sin(armAngle + 0.2) * shellS * 0.3
+                );
+                ctx.fill();
+            }
+            // Starfish center
+            ctx.fillStyle = '#FF8888';
+            ctx.beginPath();
+            ctx.arc(0, 0, shellS * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        break;
 
                 // ══════ A1 JEWISH WORLD IMMERSION - NEW DECORATIONS ══════
                 case 'matkot':
-                    // Israeli beach paddleball - two paddles and ball
-                    const wave = Math.sin(time * 3 + obj.rot) * 5;
-                    // Paddle 1
-                    ctx.fillStyle = '#FF6B35';
-                    ctx.fillRect(-25, -15 + wave, 12, 30);
-                    ctx.fillStyle = '#4169E1';
-                    ctx.fillRect(-25, -20 + wave, 12, 8);
-                    // Paddle 2
-                    ctx.fillStyle = '#4ECDC4';
-                    ctx.fillRect(13, 5 - wave, 12, 30);
-                    ctx.fillStyle = '#FFD700';
-                    ctx.fillRect(13, 30 - wave, 12, 8);
-                    // Ball between them
-                    ctx.fillStyle = '#FFF';
-                    ctx.beginPath();
-                    ctx.arc(wave * 0.5, 0, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 25, 30, 8, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
+        // Israeli beach paddleball - two paddles and ball
+        const wave = Math.sin(time * 3 + obj.rot) * 5;
+        // Paddle 1
+        ctx.fillStyle = '#FF6B35';
+        ctx.fillRect(-25, -15 + wave, 12, 30);
+        ctx.fillStyle = '#4169E1';
+        ctx.fillRect(-25, -20 + wave, 12, 8);
+        // Paddle 2
+        ctx.fillStyle = '#4ECDC4';
+        ctx.fillRect(13, 5 - wave, 12, 30);
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(13, 30 - wave, 12, 8);
+        // Ball between them
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(wave * 0.5, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.ellipse(0, 25, 30, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        break;
 
                 case 'israelFlag':
-                    // Israeli flag waving
-                    const israelFlagWave = Math.sin(time * 2 + obj.waving) * 3;
-                    // Flag pole
-                    ctx.strokeStyle = '#8B4513';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 20);
-                    ctx.lineTo(0, -30);
-                    ctx.stroke();
-                    // Flag cloth (with wave animation)
-                    ctx.fillStyle = '#FFF';
-                    ctx.fillRect(2, -28, 40, 24);
-                    // Blue stripes
-                    ctx.fillStyle = '#0038b8';
-                    ctx.fillRect(2, -28, 40 + israelFlagWave, 4);
-                    ctx.fillRect(2, -8, 40 + israelFlagWave, 4);
-                    // Star of David
-                    ctx.strokeStyle = '#0038b8';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(22, -20);
-                    ctx.lineTo(26, -12);
-                    ctx.lineTo(18, -12);
-                    ctx.closePath();
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(22, -12);
-                    ctx.lineTo(18, -20);
-                    ctx.lineTo(26, -20);
-                    ctx.closePath();
-                    ctx.stroke();
-                    break;
+        // Israeli flag waving
+        const israelFlagWave = Math.sin(time * 2 + obj.waving) * 3;
+        // Flag pole
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 20);
+        ctx.lineTo(0, -30);
+        ctx.stroke();
+        // Flag cloth (with wave animation)
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(2, -28, 40, 24);
+        // Blue stripes
+        ctx.fillStyle = '#0038b8';
+        ctx.fillRect(2, -28, 40 + israelFlagWave, 4);
+        ctx.fillRect(2, -8, 40 + israelFlagWave, 4);
+        // Star of David
+        ctx.strokeStyle = '#0038b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(22, -20);
+        ctx.lineTo(26, -12);
+        ctx.lineTo(18, -12);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(22, -12);
+        ctx.lineTo(18, -20);
+        ctx.lineTo(26, -20);
+        ctx.closePath();
+        ctx.stroke();
+        break;
 
                 case 'sunbather':
-                    // Person lying on towel
-                    // Towel
-                    ctx.fillStyle = obj.towelColor;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 40, 20, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                    // Body (simple oval)
-                    ctx.fillStyle = obj.skinTone;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 25, 12, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Head
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 8, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Sunglasses
-                    ctx.fillStyle = '#1a1a1a';
-                    ctx.beginPath();
-                    ctx.ellipse(-3, 0, 3, 2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.ellipse(3, 0, 3, 2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 15, 35, 8, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
+        // Person lying on towel
+        // Towel
+        ctx.fillStyle = obj.towelColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 40, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Body (simple oval)
+        ctx.fillStyle = obj.skinTone;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 25, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Head
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Sunglasses
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.ellipse(-3, 0, 3, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(3, 0, 3, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath();
+        ctx.ellipse(0, 15, 35, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        break;
 
                 case 'hamsa':
-                    // Hamsa hand decoration
-                    const hamsaS = obj.size;
-                    ctx.fillStyle = '#4ECDC4';
-                    ctx.beginPath();
-                    // Palm
-                    ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Fingers (3)
-                    for (let f = -1; f <= 1; f++) {
-                        const fx = f * hamsaS * 0.3;
-                        ctx.fillStyle = '#4ECDC4';
-                        ctx.beginPath();
-                        ctx.ellipse(fx, -hamsaS * 0.6, hamsaS * 0.15, hamsaS * 0.4, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    // Eye in center
-                    ctx.fillStyle = '#FFF';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, hamsaS * 0.2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#1a1a1a';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, hamsaS * 0.1, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Border
-                    ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
-                    ctx.stroke();
-                    break;
+        // Hamsa hand decoration
+        const hamsaS = obj.size;
+        ctx.fillStyle = '#4ECDC4';
+        ctx.beginPath();
+        // Palm
+        ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Fingers (3)
+        for (let f = -1; f <= 1; f++) {
+            const fx = f * hamsaS * 0.3;
+            ctx.fillStyle = '#4ECDC4';
+            ctx.beginPath();
+            ctx.ellipse(fx, -hamsaS * 0.6, hamsaS * 0.15, hamsaS * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        // Eye in center
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(0, 0, hamsaS * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(0, 0, hamsaS * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        // Border
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, hamsaS * 0.5, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
 
                 case 'starDecoration':
-                    // Star of David decoration
-                    const starS = obj.size;
-                    ctx.save();
-                    ctx.rotate(time * 0.5);
-                    ctx.strokeStyle = obj.color;
-                    ctx.lineWidth = 3;
-                    // Upward triangle
-                    ctx.beginPath();
-                    for (let i = 0; i < 3; i++) {
-                        const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
-                        const x = Math.cos(a) * starS;
-                        const y = Math.sin(a) * starS;
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    }
-                    ctx.closePath();
-                    ctx.stroke();
-                    // Downward triangle
-                    ctx.beginPath();
-                    for (let i = 0; i < 3; i++) {
-                        const a = (i / 3) * Math.PI * 2 + Math.PI / 2;
-                        const x = Math.cos(a) * starS;
-                        const y = Math.sin(a) * starS;
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    }
-                    ctx.closePath();
-                    ctx.stroke();
-                    ctx.restore();
-                    // Glow effect
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = obj.color;
-                    ctx.fillStyle = obj.color;
-                    ctx.globalAlpha = 0.3;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, starS * 0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.globalAlpha = 1;
-                    ctx.shadowBlur = 0;
-                    break;
+        // Star of David decoration
+        const starS = obj.size;
+        ctx.save();
+        ctx.rotate(time * 0.5);
+        ctx.strokeStyle = obj.color;
+        ctx.lineWidth = 3;
+        // Upward triangle
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
+            const x = Math.cos(a) * starS;
+            const y = Math.sin(a) * starS;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        // Downward triangle
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * Math.PI * 2 + Math.PI / 2;
+            const x = Math.cos(a) * starS;
+            const y = Math.sin(a) * starS;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+        // Glow effect
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = obj.color;
+        ctx.fillStyle = obj.color;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(0, 0, starS * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+        break;
             }
 
-            ctx.restore();
+        ctx.restore();
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -5748,41 +5443,6 @@
             skyGrad.addColorStop(1, '#E8D4A8');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, W, H);
-
-            // ══════ SUN / MOON ══════
-            const celestialY = H * 0.15 + Math.sin(timeOfDay * Math.PI * 2) * H * 0.1;
-            const celestialX = W * 0.2 + (timeOfDay * W * 0.6);
-
-            if (dayNightCycle.currentPhase === 'day' || dayNightCycle.currentPhase === 'sunset') {
-                // Sun
-                const sunGlow = ctx.createRadialGradient(celestialX, celestialY, 0, celestialX, celestialY, 60);
-                sunGlow.addColorStop(0, 'rgba(255, 255, 200, 0.8)');
-                sunGlow.addColorStop(0.5, 'rgba(255, 200, 50, 0.4)');
-                sunGlow.addColorStop(1, 'rgba(255, 200, 50, 0)');
-                ctx.fillStyle = sunGlow;
-                ctx.beginPath();
-                ctx.arc(celestialX, celestialY, 60, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.arc(celestialX, celestialY, 25, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                // Moon
-                ctx.fillStyle = '#F0F0F0';
-                ctx.beginPath();
-                ctx.arc(celestialX, celestialY, 20, 0, Math.PI * 2);
-                ctx.fill();
-                // Moon glow
-                const moonGlow = ctx.createRadialGradient(celestialX, celestialY, 0, celestialX, celestialY, 40);
-                moonGlow.addColorStop(0, 'rgba(240, 240, 240, 0.3)');
-                moonGlow.addColorStop(1, 'rgba(240, 240, 240, 0)');
-                ctx.fillStyle = moonGlow;
-                ctx.beginPath();
-                ctx.arc(celestialX, celestialY, 40, 0, Math.PI * 2);
-                ctx.fill();
-            }
 
             // ══════ CLEAN SAND BASE ( tinted by ambient light ) ══════
             const sandBrightness = Math.floor(232 * ambient + 30);
@@ -6227,15 +5887,18 @@
 
             generateWorld();
 
+            // CRITICAL FIX: Build spatial grid for buildings immediately after world generation
+            // This ensures safe spawn logic works correctly from the very first frame
+            buildingGrid.build(buildings);
+
+            // PERFORMANCE: Pre-render enemy sprites for significant FPS boost
+            preRenderEnemySprites();
+
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('weaponSelectScreen').classList.add('hidden');
             document.getElementById('questScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
             document.getElementById('hud').style.display = 'flex';
-
-            // Initialize daily challenges display
-            generateDailyChallenges();
-            renderDailyChallenges();
 
             // Reset game over screen title (in case it was victory)
             document.getElementById('gameOverScreen').querySelector('.game-over-title').textContent = 'GAME OVER';
@@ -7360,6 +7023,8 @@
             t.text = text;
             t.color = color;
             t.life = 1;
+            t.maxLife = 1; // Track max life for animation
+            t.scale = 0;   // Start at 0 for pop-in
             t.vy = -80;
             floatingTexts.push(t);
         }
@@ -8011,6 +7676,18 @@
                 t.y += t.vy * dt;
                 t.vy *= 0.95;
                 t.life -= dt;
+
+                // JUICY POP ANIMATION
+                const progress = 1 - (t.life / t.maxLife);
+                if (progress < 0.15) {
+                    // Pop in
+                    t.scale = progress / 0.15 * 1.5;
+                } else if (progress < 0.3) {
+                    // Settle
+                    t.scale = 1.5 - ((progress - 0.15) / 0.15) * 0.5;
+                } else {
+                    t.scale = 1;
+                }
             });
             // Return dead floating texts to pool
             const deadTexts = floatingTexts.filter(t => t.life <= 0);
@@ -8237,15 +7914,24 @@
             floatingTexts.forEach(t => {
                 const sx = t.x - camera.x;
                 const sy = t.y - camera.y;
+
                 ctx.save();
+                ctx.translate(sx, sy);
+                ctx.scale(t.scale, t.scale);
+
                 ctx.globalAlpha = t.life;
-                ctx.font = 'bold 22px Heebo';
+                ctx.font = 'bold 24px Heebo'; // Slightly larger
                 ctx.textAlign = 'center';
+
+                // Hard shadow/outline for better visibility
+                ctx.lineWidth = 5;
                 ctx.strokeStyle = '#000';
-                ctx.lineWidth = 4;
-                ctx.strokeText(t.text, sx, sy);
+                ctx.lineJoin = 'round';
+                ctx.strokeText(t.text, 0, 0);
+
                 ctx.fillStyle = t.color;
-                ctx.fillText(t.text, sx, sy);
+                ctx.fillText(t.text, 0, 0);
+
                 ctx.restore();
             });
 
@@ -9523,6 +9209,78 @@
                     // Spawn companion - handled in update
                     player.hasGolem = true;
                     break;
+                // NEW PREMIUM WEAPONS
+                case 'kiddush':
+                    player.weapons.kiddush = true;
+                    player.selectedUpgrades.add('kiddush');
+                    player.regen += 3;
+                    player.maxHp += 30;
+                    player.hp = player.maxHp;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'torah':
+                    player.weapons.torah = true;
+                    player.selectedUpgrades.add('torah');
+                    player.pierce += 3;
+                    player.damage *= 1.2;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'matzah':
+                    player.weapons.matzah = true;
+                    player.selectedUpgrades.add('matzah');
+                    player.pierce += 5;
+                    player.damage *= 0.6;
+                    player.projCount += 2;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'sufganiyah':
+                    player.weapons.sufganiyah = true;
+                    player.selectedUpgrades.add('sufganiyah');
+                    player.damage *= 1.5;
+                    player.fireRate *= 0.8;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'etrog':
+                    player.weapons.etrog = true;
+                    player.selectedUpgrades.add('etrog');
+                    player.range *= 1.3;
+                    player.damage *= 1.1;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'flag':
+                    player.weapons.flag = true;
+                    player.selectedUpgrades.add('flag');
+                    player.pierce += 10;
+                    player.damage *= 1.3;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'challa':
+                    player.weapons.challa = true;
+                    player.selectedUpgrades.add('challa');
+                    player.damage *= 0.8;
+                    player.fireRate *= 0.7;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'tefillin':
+                    player.weapons.tefillin = true;
+                    player.selectedUpgrades.add('tefillin');
+                    player.armor += 0.2;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'havdalah':
+                    player.weapons.havdalah = true;
+                    player.selectedUpgrades.add('havdalah');
+                    player.damage *= 1.2;
+                    sessionStats.weaponsUnlocked++;
+                    break;
+                case 'maccabee':
+                    player.weapons.maccabee = true;
+                    player.selectedUpgrades.add('maccabee');
+                    player.damage *= 2.0;
+                    player.speed *= 1.2;
+                    player.critChance += 0.2;
+                    sessionStats.weaponsUnlocked++;
+                    break;
             }
         }
 
@@ -9598,8 +9356,29 @@
             AudioSystem.playClick();
             returnToMenu();
         };
+        document.getElementById('shareBtn').onclick = () => {
+            AudioSystem.playClick();
+            const text = `I survived ${formatTime(gameTime)} in Sababa Survivor! 🏖️\nLevel ${player.level} | ${kills} Enemies Defeated\nCan you beat the heat? ✡️🔥`;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('shareBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'COPIED! ✓';
+                setTimeout(() => btn.textContent = originalText, 2000);
+            });
+        };
         document.getElementById('weaponsBtn').onclick = () => { AudioSystem.playClick(); showWeaponSelect(); };
         document.getElementById('weaponsBackBtn').onclick = () => { AudioSystem.playClick(); hideWeaponSelect(); };
+
+        // Daily Challenges button handlers
+        document.getElementById('dailyBtn').onclick = () => {
+            AudioSystem.playClick();
+            renderDailyChallenges();
+            document.getElementById('dailyScreen').classList.remove('hidden');
+        };
+        document.getElementById('dailyBackBtn').onclick = () => {
+            AudioSystem.playClick();
+            document.getElementById('dailyScreen').classList.add('hidden');
+        };
         document.getElementById('questsBtn').onclick = () => { AudioSystem.playClick(); showQuestScreen(); };
         document.getElementById('questsBackBtn').onclick = () => { AudioSystem.playClick(); hideQuestScreen(); };
         document.getElementById('leaderboardBtn').onclick = () => { AudioSystem.playClick(); toggleLeaderboard(); };
@@ -9916,8 +9695,70 @@
         checkFirstTimeUser();
 
         // Start
+        renderDailyChallenges(); // Initial render to show badge
         requestAnimationFrame(gameLoop);
     </script>
+</body>
+
+</html> updateMenuXPDisplay();
+updateUsernameDisplay();
+checkFirstTimeUser();
+
+// Start
+renderDailyChallenges(); // Initial render to show badge
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+
+</html>
+</div>
+`;
+});
+
+list.innerHTML = html;
+}
+
+function toggleLeaderboard() {
+const popup = document.getElementById('leaderboardPopup');
+if (popup.classList.contains('show')) {
+hideLeaderboard();
+} else {
+showLeaderboard();
+}
+}
+
+function showLeaderboard() {
+document.getElementById('leaderboardPopup').classList.add('show');
+document.getElementById('playerNameInput').value = metaProgress.playerName || '';
+loadLeaderboard('xp');
+}
+
+function hideLeaderboard() {
+document.getElementById('leaderboardPopup').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+loadMetaProgress();
+updateMenuXPDisplay();
+updateUsernameDisplay();
+checkFirstTimeUser();
+
+// Start
+renderDailyChallenges(); // Initial render to show badge
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+
+</html> updateMenuXPDisplay();
+updateUsernameDisplay();
+checkFirstTimeUser();
+
+// Start
+renderDailyChallenges(); // Initial render to show badge
+requestAnimationFrame(gameLoop);
+</script>
 </body>
 
 </html>
