@@ -1226,48 +1226,6 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
-        /* ══════ A1 COMBO DISPLAY ══════ */
-        .combo-display {
-            animation: combo-pulse 0.5s ease-out;
-            transition: all 0.3s ease;
-        }
-
-        .combo-display.show {
-            display: flex !important;
-            animation: combo-pop 0.3s ease-out;
-        }
-
-        @keyframes combo-pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes combo-pop {
-            0% {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-
-            70% {
-                transform: scale(1.1);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
         /* ══════ RESPONSIVE DESIGN ══════ */
         /* Make all screens scrollable and fit viewport */
         .screen {
@@ -1596,18 +1554,6 @@
                 font-size: 14px;
             }
         }
-
-        /* ═══════════════════════════════════════════════════════════════════
-           MENU CHALLENGE CARDS (for Daily Challenges screen)
-           ═══════════════════════════════════════════════════════════════════ */
-        .menu-challenge-card {
-            transition: all 0.3s ease;
-        }
-
-        .menu-challenge-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
     </style>
 </head>
 
@@ -1631,11 +1577,6 @@
         </div>
         <div class="hud-right">
             <div class="level-badge">LEVEL <span id="lvlVal">1</span></div>
-            <!-- A1 Combo Display -->
-            <div class="stat-item combo-display" id="comboDisplay"
-                style="display:none; background: linear-gradient(135deg, #FF6B35, #FF8C42);">
-                <span style="opacity:0.9">🔥</span> <span id="comboVal" class="hud-value">x1</span>
-            </div>
             <div class="stat-item"><span style="opacity:0.6">⏱</span> <span id="timeVal" class="hud-value">0:00</span>
             </div>
             <div class="stat-item"><span style="opacity:0.6">💀</span> <span id="killVal" class="hud-value">0</span>
@@ -1663,8 +1604,6 @@
             <button class="btn-play" id="startBtn">YALLA!</button>
             <div class="menu-buttons">
                 <button class="btn-menu" id="weaponsBtn">🔫 WEAPONS</button>
-                <button class="btn-menu" id="dailyBtn">📅 DAILY <span id="dailyBadge"
-                        style="color: #FFD700; display:none;">●</span></button>
                 <button class="btn-menu" id="questsBtn">📜 QUESTS <span id="questProgress"
                         style="color: #4ECDC4;">(0/100)</span></button>
                 <button class="btn-menu" id="leaderboardBtn">🏆 LEADERBOARD</button>
@@ -1672,21 +1611,6 @@
             <p class="controls-hint">Move with <span class="key">WASD</span> or <span class="key">Arrow Keys</span></p>
             <button class="btn-mute" id="muteBtn"
                 style="position: absolute; bottom: 20px; right: 20px; padding: 10px 15px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; font-size: 24px; color: #fff; transition: all 0.2s ease;">🔊</button>
-        </div>
-    </div>
-
-    <!-- DAILY CHALLENGES SCREEN -->
-    <div id="dailyScreen" class="screen hidden">
-        <div class="screen-content" style="max-width: 600px;">
-            <h2 class="weapon-select-title">📅 DAILY CHALLENGES</h2>
-            <p style="color: rgba(255,255,255,0.6); margin-bottom: 20px; text-align: center;">
-                Complete 3 challenges every day for bonus XP!
-            </p>
-            <div id="dailyChallengesContainer"
-                style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
-                <!-- Challenges populated by JS -->
-            </div>
-            <button class="btn-back" id="dailyBackBtn">← BACK</button>
         </div>
     </div>
 
@@ -1767,11 +1691,9 @@
                 </div>
             </div>
             <button class="btn-retry" id="retryBtn">TRY AGAIN</button>
-            style="margin-left: 15px; background: linear-gradient(135deg, #2A9D8F, #21867a);">↩ RETURN TO
-            MENU</button>
-            <button class="btn-retry" id="shareBtn"
-                style="margin-top: 15px; width: 100%; background: linear-gradient(135deg, #FFD700, #FFA500); color: #333;">📤
-                SHARE SCORE</button>
+            <button class="btn-menu-return" id="menuBtn"
+                style="margin-top: 15px; padding: 12px 35px; font-size: 16px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; border-radius: 8px; transition: all 0.2s ease;">↩
+                RETURN TO MENU</button>
         </div>
     </div>
 
@@ -1847,13 +1769,7 @@
             MAX_PICKUPS: 400,           // Reduced from 500
             GRID_CELL_SIZE: 150,        // Spatial grid cell size
             LOW_DETAIL_THRESHOLD: 50,   // Switch to simple rendering above this enemy count (was 80)
-            AUDIO_KILL_COOLDOWN: 50,    // Minimum ms between kill sounds
-            // A1 Performance enhancements
-            FRAME_SKIP_DISTANCE: 400,   // Distance beyond which enemies update every other frame
-            LOD_DISTANCE: 300,          // Distance for switching to low-detail rendering
-            VIEWPORT_MARGIN: 150,       // Margin for viewport culling
-            OFFSCREEN_CACHE_SIZE: 4096, // Size of offscreen world cache
-            DT_SMOOTHING: 0.8           // Delta time smoothing factor (0-1)
+            AUDIO_KILL_COOLDOWN: 50     // Minimum ms between kill sounds
         };
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1987,40 +1903,17 @@
             // Freygish scale (Jewish minor scale) - D E♭ F# G A B♭ C D
             freygishScale: [293.66, 311.13, 369.99, 392.00, 440.00, 466.16, 523.25, 587.33],
 
-            // Extended klezmer melody patterns - authentic Jewish folk music
+            // Melody patterns for klezmer feel
             melodyPatterns: [
-                // Classic freygish patterns
                 [0, 2, 3, 4, 3, 2, 0, 0],
                 [4, 3, 2, 3, 4, 4, 4, 3],
                 [0, 0, 3, 3, 4, 4, 3, 2],
                 [5, 4, 3, 4, 5, 5, 4, 3],
                 [2, 3, 4, 5, 4, 3, 2, 0],
-                [3, 2, 0, 2, 3, 4, 3, 2],
-                // Extended patterns for variety
-                [0, 3, 2, 0, 4, 3, 2, 1],
-                [2, 4, 5, 4, 3, 2, 3, 4],
-                [0, 2, 4, 3, 2, 0, 3, 2],
-                [4, 5, 6, 5, 4, 3, 2, 0],
-                [3, 4, 3, 2, 0, 2, 3, 4],
-                [5, 3, 4, 2, 3, 1, 2, 0]
+                [3, 2, 0, 2, 3, 4, 3, 2]
             ],
-
-            // Music intensity levels based on gameplay
-            intensityLevel: 0, // 0: calm, 1: medium, 2: intense
-            baseTempo: 280,
-
             currentPattern: 0,
             patternNote: 0,
-
-            // Hebrew voice lines for actions
-            hebrewPhrases: {
-                start: ['Yalla!', 'Let\'s go!', 'Sababa!', 'Chai!'],
-                levelUp: ['Yasher koach!', 'All right!', 'Tov me\'od!', 'Achla!'],
-                kill: ['Take that!', 'Gotcha!', 'Boom!', 'Yalla!'],
-                damage: ['Oy!', 'Ahh!', 'Watch it!', 'Hey!'],
-                combo: ['Woah!', 'Amazing!', 'Metzuyan!', 'Gadol!'],
-                boss: ['Uh oh!', 'Watch out!', 'Big one!', 'Yalla!']
-            },
 
             init() {
                 if (this.ctx) return;
@@ -2289,17 +2182,6 @@
             { id: 'hummus', icon: '🥣', name: 'Hummus Wave', desc: 'AOE attack that slows', rarity: 'epic', apply: P => P.weapons.hummus = true, unique: true },
             { id: 'shofar', icon: '📯', name: 'Shofar Blast', desc: 'Cone knockback attack', rarity: 'epic', apply: P => P.weapons.shofar = true, unique: true },
             { id: 'dreidel', icon: '🪀', name: 'Dreidel Shield', desc: 'Orbiting dreidels', rarity: 'epic', apply: P => P.weapons.dreidel = true, unique: true },
-            // NEW PREMIUM WEAPON UPGRADES
-            { id: 'kiddush', icon: '🍷', name: 'Kiddush Cup', desc: 'Holy healing burst', rarity: 'epic', apply: P => P.weapons.kiddush = true, unique: true },
-            { id: 'torah', icon: '📜', name: 'Torah Scroll', desc: 'Spinning sacred text', rarity: 'epic', apply: P => P.weapons.torah = true, unique: true },
-            { id: 'matzah', icon: '🫓', name: 'Matzah Shard', desc: 'Piercing shrapnel', rarity: 'epic', apply: P => P.weapons.matzah = true, unique: true },
-            { id: 'sufganiyah', icon: '🍩', name: 'Sufganiyah', desc: 'Explosive jelly bombs', rarity: 'epic', apply: P => P.weapons.sufganiyah = true, unique: true },
-            { id: 'etrog', icon: '🍋', name: 'Etrog & Lulav', desc: 'Whip attack', rarity: 'epic', apply: P => P.weapons.etrog = true, unique: true },
-            { id: 'flag', icon: '🇮🇱', name: 'Israeli Flag', desc: 'Laser beam', rarity: 'epic', apply: P => P.weapons.flag = true, unique: true },
-            { id: 'challa', icon: '🍞', name: 'Challa Boomerang', desc: 'Returning bread', rarity: 'epic', apply: P => P.weapons.challa = true, unique: true },
-            { id: 'tefillin', icon: '⛓️', name: 'Teffilin Chains', desc: 'Binding slow', rarity: 'epic', apply: P => P.weapons.tefillin = true, unique: true },
-            { id: 'havdalah', icon: '🕯️', name: 'Havdalah Candle', desc: 'Fire spiral', rarity: 'epic', apply: P => P.weapons.havdalah = true, unique: true },
-            { id: 'maccabee', icon: '⚔️', name: 'Maccabee Sword', desc: 'Legendary melee', rarity: 'legendary', apply: P => P.weapons.maccabee = true, unique: true },
             { id: 'revive', icon: '✨', name: 'Resurrection', desc: 'Revive once with 50% HP', rarity: 'legendary', apply: P => P.revives++, unique: true },
         ];
 
@@ -2320,166 +2202,6 @@
         ];
 
         // ═══════════════════════════════════════════════════════════════════
-        // OBJECT POOLING - Reuse objects to reduce garbage collection
-        // ═══════════════════════════════════════════════════════════════════
-        const objectPools = {
-            particles: [],
-            projectiles: [],
-            floatingTexts: [],
-            pickups: []
-        };
-
-        function getPooledParticle() {
-            return objectPools.particles.pop() || {};
-        }
-
-        function getPooledProjectile() {
-            return objectPools.projectiles.pop() || {};
-        }
-
-        function getPooledFloatingText() {
-            return objectPools.floatingTexts.pop() || {};
-        }
-
-        function getPooledPickup() {
-            return objectPools.pickups.pop() || {};
-        }
-
-        function returnPooledParticle(p) {
-            if (objectPools.particles.length < 100) {
-                objectPools.particles.push(p);
-            }
-        }
-
-        function returnPooledProjectile(p) {
-            if (objectPools.projectiles.length < 100) {
-                objectPools.projectiles.push(p);
-            }
-        }
-
-        function returnPooledFloatingText(t) {
-            if (objectPools.floatingTexts.length < 50) {
-                objectPools.floatingTexts.push(t);
-            }
-        }
-
-        function returnPooledPickup(p) {
-            if (objectPools.pickups.length < 100) {
-                objectPools.pickups.push(p);
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // SPRITE PRE-RENDERING CACHE (Vampire Survivors technique!)
-        // Pre-render each enemy type ONCE, then use drawImage() for 60fps
-        // ═══════════════════════════════════════════════════════════════════
-        const enemySpriteCache = {}; // type index -> { canvas, width, height }
-        const simpleEnemySpriteCache = {}; // Simplified version for high enemy counts
-        let spriteCacheReady = false;
-
-        function preRenderEnemySprites() {
-            // Render each enemy type to an offscreen canvas for fast stamping
-            ENEMY_TYPES.forEach((enemyType, index) => {
-                const padding = 30;
-                const size = enemyType.size + padding * 2;
-
-                // Full quality version
-                const offscreen = document.createElement('canvas');
-                offscreen.width = size;
-                offscreen.height = size;
-                const c = offscreen.getContext('2d');
-
-                c.translate(size / 2, size / 2);
-
-                const s = enemyType.size * 0.5;
-                const color = enemyType.color;
-
-                // Parse color for manipulation
-                const hexToRgb = (hex) => {
-                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                    return result ? {
-                        r: parseInt(result[1], 16),
-                        g: parseInt(result[2], 16),
-                        b: parseInt(result[3], 16)
-                    } : { r: 200, g: 100, b: 100 };
-                };
-                const rgb = hexToRgb(color);
-                const lighter = `rgb(${Math.min(255, rgb.r + 60)}, ${Math.min(255, rgb.g + 60)}, ${Math.min(255, rgb.b + 60)})`;
-                const darker = `rgb(${Math.max(0, rgb.r - 60)}, ${Math.max(0, rgb.g - 60)}, ${Math.max(0, rgb.b - 60)})`;
-
-                // Body with gradient
-                const bodyGrad = c.createRadialGradient(-s * 0.1, -s * 0.1, 0, 0, 0, s);
-                bodyGrad.addColorStop(0, lighter);
-                bodyGrad.addColorStop(0.7, color);
-                bodyGrad.addColorStop(1, darker);
-                c.fillStyle = bodyGrad;
-                c.beginPath();
-                c.arc(0, 0, s * 0.8, 0, Math.PI * 2);
-                c.fill();
-
-                // Outline
-                c.strokeStyle = darker;
-                c.lineWidth = 2;
-                c.stroke();
-
-                // Eyes
-                c.fillStyle = '#FFF';
-                c.beginPath();
-                c.arc(-s * 0.25, -s * 0.1, s * 0.18, 0, Math.PI * 2);
-                c.arc(s * 0.25, -s * 0.1, s * 0.18, 0, Math.PI * 2);
-                c.fill();
-
-                // Pupils
-                c.fillStyle = '#000';
-                c.beginPath();
-                c.arc(-s * 0.22, -s * 0.08, s * 0.08, 0, Math.PI * 2);
-                c.arc(s * 0.22, -s * 0.08, s * 0.08, 0, Math.PI * 2);
-                c.fill();
-
-                // Angry eyebrows
-                c.strokeStyle = darker;
-                c.lineWidth = 3;
-                c.beginPath();
-                c.moveTo(-s * 0.4, -s * 0.3);
-                c.lineTo(-s * 0.1, -s * 0.22);
-                c.moveTo(s * 0.4, -s * 0.3);
-                c.lineTo(s * 0.1, -s * 0.22);
-                c.stroke();
-
-                enemySpriteCache[index] = { canvas: offscreen, width: size, height: size };
-
-                // Simple version for high enemy counts (solid colors, no gradients)
-                const simpleCanvas = document.createElement('canvas');
-                simpleCanvas.width = size;
-                simpleCanvas.height = size;
-                const sc = simpleCanvas.getContext('2d');
-                sc.translate(size / 2, size / 2);
-
-                // Simple body - solid color circle
-                sc.fillStyle = color;
-                sc.beginPath();
-                sc.arc(0, 0, s * 0.8, 0, Math.PI * 2);
-                sc.fill();
-
-                // Simple outline
-                sc.strokeStyle = darker;
-                sc.lineWidth = 1;
-                sc.stroke();
-
-                // Simple eyes (just dots)
-                sc.fillStyle = '#FFF';
-                sc.beginPath();
-                sc.arc(-s * 0.25, -s * 0.1, s * 0.12, 0, Math.PI * 2);
-                sc.arc(s * 0.25, -s * 0.1, s * 0.12, 0, Math.PI * 2);
-                sc.fill();
-
-                simpleEnemySpriteCache[index] = { canvas: simpleCanvas, width: size, height: size };
-            });
-            spriteCacheReady = true;
-            console.log('🎮 Enemy sprites pre-rendered for 60fps performance!');
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
         // STARTING WEAPONS
         // ═══════════════════════════════════════════════════════════════════
         const STARTING_WEAPONS = [
@@ -2493,17 +2215,6 @@
             { id: 'krav', icon: '🥊', name: 'Krav Maga', desc: 'Melee dash attack', unlockXP: 9000 },
             { id: 'arak', icon: '🍶', name: 'Arak Fire', desc: 'Damage trail', unlockXP: 12000 },
             { id: 'golem', icon: '🗿', name: 'Golem Summon', desc: 'AI companion', unlockXP: 16000 },
-            // NEW PREMIUM WEAPONS
-            { id: 'kiddush', icon: '🍷', name: 'Kiddush Cup', desc: 'Holy healing burst', unlockXP: 21000 },
-            { id: 'torah', icon: '📜', name: 'Torah Scroll', desc: 'Spinning sacred text', unlockXP: 27000 },
-            { id: 'matzah', icon: '🫓', name: 'Matzah Shard', desc: 'Piercing shrapnel', unlockXP: 34000 },
-            { id: 'sufganiyah', icon: '🍩', name: 'Sufganiyah', desc: 'Explosive jelly bombs', unlockXP: 42000 },
-            { id: 'etrog', icon: '🍋', name: 'Etrog & Lulav', desc: 'Whip attack', unlockXP: 51000 },
-            { id: 'flag', icon: '🇮🇱', name: 'Israeli Flag', desc: 'Laser beam', unlockXP: 61000 },
-            { id: 'challa', icon: '🍞', name: 'Challa Boomerang', desc: 'Returning bread', unlockXP: 72000 },
-            { id: 'tefillin', icon: '⛓️', name: 'Teffilin Chains', desc: 'Binding slow', unlockXP: 84000 },
-            { id: 'havdalah', icon: '🕯️', name: 'Havdalah Candle', desc: 'Fire spiral', unlockXP: 97000 },
-            { id: 'maccabee', icon: '⚔️', name: 'Maccabee Sword', desc: 'Legendary melee', unlockXP: 120000 },
         ];
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2672,162 +2383,6 @@
         ];
 
         // ═══════════════════════════════════════════════════════════════════
-        // A1 DAILY CHALLENGES - Addictive return mechanic
-        // ═══════════════════════════════════════════════════════════════════
-        const DAILY_CHALLENGES_POOL = [
-            { id: 'daily_kills_50', name: 'Daily Slayer', desc: 'Kill 50 enemies in one run', target: 50, stat: 'sessionKills', reward: 100 },
-            { id: 'daily_kills_100', name: 'Daily Warrior', desc: 'Kill 100 enemies in one run', target: 100, stat: 'sessionKills', reward: 200 },
-            { id: 'daily_kills_pigs', name: 'Pig Hunter', desc: 'Kill 20 Pigs', target: 20, stat: 'killsPig', reward: 150 },
-            { id: 'daily_kills_bosses', name: 'Boss Slayer', desc: 'Kill 5 boss-tier enemies', target: 5, stat: 'bossKills', reward: 300 },
-            { id: 'daily_survive_3min', name: 'Survivor', desc: 'Survive 3 minutes', target: 180, stat: 'sessionTime', reward: 150 },
-            { id: 'daily_survive_5min', name: 'Endurance', desc: 'Survive 5 minutes', target: 300, stat: 'sessionTime', reward: 250 },
-            { id: 'daily_level_10', name: 'Level Master', desc: 'Reach level 10', target: 10, stat: 'sessionLevel', reward: 200 },
-            { id: 'daily_level_15', name: 'Level Legend', desc: 'Reach level 15', target: 15, stat: 'sessionLevel', reward: 350 },
-            { id: 'daily_combo_20', name: 'Combo Starter', desc: 'Get a 20x combo', target: 20, stat: 'sessionBestCombo', reward: 200 },
-            { id: 'daily_combo_50', name: 'Combo Master', desc: 'Get a 50x combo', target: 50, stat: 'sessionBestCombo', reward: 400 },
-            { id: 'daily_xp_50', name: 'Shekel Collector', desc: 'Collect 50 shekels', target: 50, stat: 'xpCollected', reward: 100 },
-            { id: 'daily_xp_200', name: 'Shekel Hoarder', desc: 'Collect 200 shekels', target: 200, stat: 'xpCollected', reward: 300 },
-            { id: 'daily_no_damage_60', name: 'Untouchable', desc: 'Survive 60s without damage', target: 60, stat: 'noDamageTime', reward: 250 },
-            { id: 'daily_crits_20', name: 'Critical Eye', desc: 'Land 20 critical hits', target: 20, stat: 'criticalHits', reward: 150 },
-            { id: 'daily_upgrades_5', name: 'Power Hungry', desc: 'Choose 5 upgrades', target: 5, stat: 'upgradesTaken', reward: 150 },
-        ];
-
-        let dailyChallenges = {
-            date: null,
-            challenges: [],
-            completed: [],
-            claimed: []
-        };
-
-        function generateDailyChallenges() {
-            const today = new Date().toDateString();
-
-            // Check if we need new challenges
-            if (dailyChallenges.date !== today) {
-                dailyChallenges.date = today;
-                dailyChallenges.completed = [];
-                dailyChallenges.claimed = [];
-
-                // Randomly select 3 challenges
-                const shuffled = shuffle([...DAILY_CHALLENGES_POOL]);
-                dailyChallenges.challenges = shuffled.slice(0, 3);
-            }
-
-            return dailyChallenges;
-        }
-
-        function renderDailyChallenges() {
-            const container = document.getElementById('dailyChallengesContainer');
-            const badge = document.getElementById('dailyBadge');
-
-            const challenges = generateDailyChallenges();
-            const completedCount = challenges.completed.length;
-
-            // Show badge if challenges available
-            if (badge) {
-                badge.style.display = completedCount < 3 ? 'inline' : 'none';
-            }
-
-            if (!container) return;
-
-            // Build challenge cards for main menu
-            container.innerHTML = challenges.challenges.map((challenge) => {
-                const isCompleted = challenges.completed.includes(challenge.id);
-
-                // Get current progress from last session or 0
-                const savedProgress = localStorage.getItem(`challenge_${challenge.id}_progress`) || 0;
-                const currentValue = parseInt(savedProgress) || 0;
-                const progress = Math.min(currentValue / challenge.target, 1);
-                const progressPercent = Math.floor(progress * 100);
-
-                return `
-                    <div class="menu-challenge-card ${isCompleted ? 'completed' : ''}" 
-                         style="background: ${isCompleted ? 'rgba(78,205,196,0.15)' : 'rgba(255,255,255,0.08)'}; 
-                                border: 2px solid ${isCompleted ? '#4ECDC4' : 'rgba(255,255,255,0.15)'}; 
-                                border-radius: 16px; padding: 20px; text-align: left;
-                                transition: all 0.3s ease;
-                                ${isCompleted ? 'opacity: 0.7;' : ''}">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                            <div style="font-family: 'Secular One', sans-serif; font-size: 18px; color: ${isCompleted ? '#4ECDC4' : '#fff'};">
-                                ${isCompleted ? '✅' : '🎯'} ${challenge.name}
-                            </div>
-                            <div style="color: #FFD700; font-size: 14px; font-weight: 600;">
-                                +${challenge.reward} XP
-                            </div>
-                        </div>
-                        <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 12px;">
-                            ${challenge.desc}
-                        </div>
-                        <div style="height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; width: ${progressPercent}%; 
-                                        background: ${isCompleted ? 'linear-gradient(90deg, #4ECDC4, #2A9D8F)' : 'linear-gradient(90deg, #FF6B35, #FF8C42)'}; 
-                                        border-radius: 4px; transition: width 0.5s ease;"></div>
-                        </div>
-                        <div style="text-align: right; margin-top: 8px; font-size: 13px; color: ${isCompleted ? '#4ECDC4' : 'rgba(255,255,255,0.5)'};">
-                            ${isCompleted ? '✓ COMPLETED' : `${currentValue}/${challenge.target}`}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function checkDailyChallenges() {
-            const challenges = generateDailyChallenges();
-            let newCompletion = false;
-
-            challenges.challenges.forEach((challenge, index) => {
-                if (challenges.completed.includes(challenge.id)) return;
-
-                let currentValue = 0;
-                switch (challenge.stat) {
-                    case 'sessionKills': currentValue = kills; break;
-                    case 'sessionTime': currentValue = gameTime; break;
-                    case 'sessionLevel': currentValue = player ? player.level : 0; break;
-                    case 'sessionBestCombo': currentValue = comboSystem.bestCombo; break;
-                    case 'xpCollected': currentValue = sessionStats.xpGemsCollected || 0; break;
-                    case 'noDamageTime': currentValue = noDamageTime; break;
-                    case 'criticalHits': currentValue = sessionStats.criticalHits || 0; break;
-                    case 'upgradesTaken': currentValue = sessionStats.upgrades || 0; break;
-                    case 'killsPig': currentValue = sessionStats.killsByType ? sessionStats.killsByType['Pig'] || 0 : 0; break;
-                    case 'bossKills': currentValue = sessionStats.bossKills || 0; break;
-                }
-
-                if (currentValue >= challenge.target) {
-                    challenges.completed.push(challenge.id);
-                    newCompletion = true;
-
-                    // Show completion notification
-                    floatingTexts.push({
-                        x: player.x,
-                        y: player.y - 120,
-                        text: `📅 DAILY COMPLETE: ${challenge.name}`,
-                        color: '#4ECDC4',
-                        size: 22,
-                        life: 3,
-                        vy: -20
-                    });
-
-                    // Award XP
-                    player.xp += challenge.reward * player.xpMult;
-                    floatingTexts.push({
-                        x: player.x,
-                        y: player.y - 150,
-                        text: `+${challenge.reward} DAILY BONUS`,
-                        color: '#FFD700',
-                        size: 18,
-                        life: 2,
-                        vy: -15
-                    });
-                }
-            });
-
-            // Update UI if there was a change
-            if (newCompletion || gameTime % 1 < 0.02) {
-                renderDailyChallenges();
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
         // META PROGRESSION (Saved between games)
         // ═══════════════════════════════════════════════════════════════════
         let metaProgress = {
@@ -2898,41 +2453,6 @@
         let highPerfMode = false; // True when many enemies - uses solid colors instead of gradients
 
         // ═══════════════════════════════════════════════════════════════════
-        // A1 PERFORMANCE SYSTEMS
-        // ═══════════════════════════════════════════════════════════════════
-        // Offscreen canvas for static world rendering
-        let worldCacheCanvas = null;
-        let worldCacheCtx = null;
-        let worldCacheValid = false;
-        let lastCacheCameraX = 0, lastCacheCameraY = 0;
-        const CACHE_REGENERATE_DISTANCE = 200; // Regenerate cache when camera moves this far
-
-        // Delta time smoothing
-        let smoothedDT = 0.016;
-        let lastFrameTime = 0;
-
-        // ═══════════════════════════════════════════════════════════════════
-        // COMBO SYSTEM - Addictive gameplay mechanic
-        // ═══════════════════════════════════════════════════════════════════
-        let comboSystem = {
-            count: 0,
-            multiplier: 1,
-            timer: 0,
-            maxTime: 3.0, // Seconds to maintain combo
-            lastKillTime: 0,
-            bestCombo: 0,
-            totalComboKills: 0
-        };
-
-        // Mini-boss system
-        let miniBossSystem = {
-            lastSpawnTime: 0,
-            spawnInterval: 150, // 2.5 minutes
-            active: false,
-            current: null
-        };
-
-        // ═══════════════════════════════════════════════════════════════════
         // PLAYER
         // ═══════════════════════════════════════════════════════════════════
         function createPlayer() {
@@ -2972,36 +2492,6 @@
         function drawPlayer(x, y, size, walkCycle, facingRight, invTime, characterId = 'beachBro') {
             ctx.save();
             ctx.translate(x, y);
-
-            // ══════ MACCABEE FURY AURA ══════
-            // Visual effect when the Maccabee sword is active/upgraded
-            if (player.weapons.maccabee) {
-                const furyPulse = Math.sin(Date.now() / 200) * 0.2 + 0.8;
-                const auraSize = size * 1.5;
-
-                // Outer glow
-                const grad = ctx.createRadialGradient(0, 0, size * 0.5, 0, 0, auraSize);
-                grad.addColorStop(0, 'rgba(0, 255, 255, 0)');
-                grad.addColorStop(0.5, `rgba(0, 200, 255, ${0.15 * furyPulse})`);
-                grad.addColorStop(1, 'rgba(0, 100, 255, 0)');
-
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Inner electric accents
-                if (Math.random() > 0.7) {
-                    ctx.strokeStyle = '#00FFFF';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    const angle = Math.random() * Math.PI * 2;
-                    const r = size * 0.8;
-                    ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
-                    ctx.lineTo(Math.cos(angle) * (r + 10), Math.sin(angle) * (r + 10));
-                    ctx.stroke();
-                }
-            }
             if (!facingRight) ctx.scale(-1, 1);
 
             // Get character data
@@ -3461,55 +2951,64 @@
         // ═══════════════════════════════════════════════════════════════════
         // ENEMY DRAWING - Fully Animated Characters (No Emojis)
         // ═══════════════════════════════════════════════════════════════════
-        function drawEnemy(type, x, y, anim, flash, useSimple = false) {
+        function drawEnemy(type, x, y, anim, flash) {
             const e = ENEMY_TYPES[type];
             const sz = e.size;
+
+            // ALWAYS use full AAA rendering - no low detail mode
             const bob = Math.sin(anim * 4) * 3;
+            const wobble = Math.sin(anim * 3) * 0.05;
+            const time = anim;
 
             ctx.save();
             ctx.translate(x, y);
 
-            // Shadow (only in high quality mode)
-            if (!useSimple) {
-                ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                ctx.beginPath();
-                ctx.ellipse(0, sz * 0.4, sz * 0.35, sz * 0.08, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(0, sz * 0.4, sz * 0.35, sz * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
 
             ctx.translate(0, bob);
+            ctx.rotate(wobble);
 
-            // Use cached sprite for better performance
-            const cache = useSimple ? simpleEnemySpriteCache : enemySpriteCache;
-            if (cache[type]) {
-                const sprite = cache[type];
-                ctx.drawImage(sprite.canvas, -sprite.width / 2, -sprite.height / 2);
+            // Flash overlay disabled - no more white flash on hit
+            const flashMult = 1; // Always normal brightness (was: flash > 0 ? 1.8 : 1)
 
-                // Flash effect overlay
-                if (flash > 0) {
-                    ctx.fillStyle = `rgba(255,255,255,${flash * 0.5})`;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sz * 0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            } else {
-                // Fallback to procedural drawing
-                const wobble = Math.sin(anim * 3) * 0.05;
-                ctx.rotate(wobble);
-
-                switch (type) {
-                    case 0: drawPigEnemy(sz, anim, 1); break;
-                    case 1: drawShrimpEnemy(sz, anim, 1); break;
-                    case 2: drawCrabEnemy(sz, anim, 1); break;
-                    case 3: drawBaconEnemy(sz, anim, 1); break;
-                    case 4: drawLobsterEnemy(sz, anim, 1); break;
-                    case 5: drawBreadEnemy(sz, anim, 1); break;
-                    case 6: drawHamanEnemy(sz, anim, 1); break;
-                    case 7: drawPharaohEnemy(sz, anim, 1); break;
-                    case 8: drawGoliathEnemy(sz, anim, 1); break;
-                    case 9: drawGoldenCalfEnemy(sz, anim, 1); break;
-                    default: drawBasicEnemy(sz, e.color, 1);
-                }
+            switch (type) {
+                case 0: // Pig - Pink cartoon pig
+                    drawPigEnemy(sz, time, flashMult);
+                    break;
+                case 1: // Shrimp - Curved shrimp
+                    drawShrimpEnemy(sz, time, flashMult);
+                    break;
+                case 2: // Crab - Red crab with claws
+                    drawCrabEnemy(sz, time, flashMult);
+                    break;
+                case 3: // Bacon - Strip of bacon
+                    drawBaconEnemy(sz, time, flashMult);
+                    break;
+                case 4: // Lobster - Big red lobster
+                    drawLobsterEnemy(sz, time, flashMult);
+                    break;
+                case 5: // Bread (Chametz) - Evil bread loaf
+                    drawBreadEnemy(sz, time, flashMult);
+                    break;
+                case 6: // Haman - Evil villain with hat
+                    drawHamanEnemy(sz, time, flashMult);
+                    break;
+                case 7: // Pharaoh - Egyptian pharaoh
+                    drawPharaohEnemy(sz, time, flashMult);
+                    break;
+                case 8: // Goliath - Giant warrior
+                    drawGoliathEnemy(sz, time, flashMult);
+                    break;
+                case 9: // Golden Calf - Golden idol
+                    drawGoldenCalfEnemy(sz, time, flashMult);
+                    break;
+                default:
+                    // Fallback basic enemy
+                    drawBasicEnemy(sz, e.color, flashMult);
             }
 
             ctx.restore();
@@ -4350,7 +3849,9 @@
 
             const sz = 12;
 
-            // Removed shadowBlur for performance - use brighter fills instead
+            // Glow
+            ctx.shadowColor = '#4ECDC4';
+            ctx.shadowBlur = 15;
 
             // Star of David
             ctx.strokeStyle = '#4ECDC4';
@@ -4381,80 +3882,6 @@
         // ═══════════════════════════════════════════════════════════════════
         // WORLD GENERATION - Tel Aviv Beach Paradise
         // ═══════════════════════════════════════════════════════════════════
-        // ═══════════════════════════════════════════════════════════════════
-        // A1 JEWISH WORLD SYSTEM - Day/Night Cycle & Authentic Atmosphere
-        // ═══════════════════════════════════════════════════════════════════
-        let timeOfDay = 0; // 0-1 (0=noon, 0.5=sunset, 0.75=night, 1=noon)
-        let dayNightCycle = {
-            enabled: true,
-            cycleDuration: 480, // 8 minutes for full day/night cycle
-            currentPhase: 'day', // day, sunset, night, sunrise
-            shabbatMode: false,
-            candleLights: []
-        };
-
-        function updateDayNightCycle(dt) {
-            if (!dayNightCycle.enabled) return;
-
-            // Update time (0-1 cycle)
-            timeOfDay = (timeOfDay + dt / dayNightCycle.cycleDuration) % 1;
-
-            // Determine phase
-            if (timeOfDay < 0.35) dayNightCycle.currentPhase = 'day';
-            else if (timeOfDay < 0.5) dayNightCycle.currentPhase = 'sunset';
-            else if (timeOfDay < 0.75) dayNightCycle.currentPhase = 'night';
-            else dayNightCycle.currentPhase = 'sunrise';
-
-            // Check for Shabbat (Friday evening)
-            const now = new Date();
-            const isFriday = now.getDay() === 5;
-            const hour = now.getHours();
-            dayNightCycle.shabbatMode = isFriday && hour >= 17;
-        }
-
-        function getAmbientLight() {
-            if (timeOfDay < 0.35) return 1.0;
-            if (timeOfDay < 0.5) return 1.0 - (timeOfDay - 0.35) / 0.15 * 0.65;
-            if (timeOfDay < 0.75) return 0.35;
-            return 0.35 + (timeOfDay - 0.75) / 0.25 * 0.65;
-        }
-
-        function interpolateColor(c1, c2, t) {
-            const hex2rgb = (hex) => ({
-                r: parseInt(hex.slice(1, 3), 16),
-                g: parseInt(hex.slice(3, 5), 16),
-                b: parseInt(hex.slice(5, 7), 16)
-            });
-            const rgb1 = hex2rgb(c1);
-            const rgb2 = hex2rgb(c2);
-            const r = Math.round(rgb1.r + (rgb2.r - rgb1.r) * t);
-            const g = Math.round(rgb1.g + (rgb2.g - rgb1.g) * t);
-            const b = Math.round(rgb1.b + (rgb2.b - rgb1.b) * t);
-            return `rgb(${r}, ${g}, ${b})`;
-        }
-
-        function getSkyColors() {
-            if (dayNightCycle.currentPhase === 'day') {
-                return { top: '#4A90E2', bottom: '#87CEEB', ambient: 1.0 };
-            } else if (dayNightCycle.currentPhase === 'sunset') {
-                const t = (timeOfDay - 0.35) / 0.15;
-                return {
-                    top: interpolateColor('#4A90E2', '#8B4513', t),
-                    bottom: interpolateColor('#87CEEB', '#FFD700', t),
-                    ambient: 1.0 - t * 0.65
-                };
-            } else if (dayNightCycle.currentPhase === 'night') {
-                return { top: '#0a0a1a', bottom: '#1a1a2e', ambient: 0.35 };
-            } else {
-                const t = (timeOfDay - 0.75) / 0.25;
-                return {
-                    top: interpolateColor('#0a0a1a', '#4A90E2', t),
-                    bottom: interpolateColor('#1a1a2e', '#87CEEB', t),
-                    ambient: 0.35 + t * 0.65
-                };
-            }
-        }
-
         function generateWorld() {
             worldObjects = [];
             const ws = CFG.WORLD_SIZE;
@@ -4664,63 +4091,6 @@
                 });
             }
 
-            // ══════ MATKOT (Israeli beach paddleball) ══════
-            for (let i = 0; i < 8; i++) {
-                const pos = findValidPosition(60);
-                worldObjects.push({
-                    type: 'matkot',
-                    x: pos.x,
-                    y: pos.y,
-                    rot: Math.random() * Math.PI * 2
-                });
-            }
-
-            // ══════ ISRAELI FLAGS ══════
-            for (let i = 0; i < 6; i++) {
-                const pos = findValidPosition(40);
-                worldObjects.push({
-                    type: 'israelFlag',
-                    x: pos.x,
-                    y: pos.y,
-                    waving: Math.random() * Math.PI * 2
-                });
-            }
-
-            // ══════ SUNBATHERS ══════
-            for (let i = 0; i < 10; i++) {
-                const pos = findValidPosition(35);
-                worldObjects.push({
-                    type: 'sunbather',
-                    x: pos.x,
-                    y: pos.y,
-                    skinTone: ['#F5DEB3', '#D4A574', '#E8C4A0', '#C4956A'][Math.floor(Math.random() * 4)],
-                    towelColor: ['#FF6B6B', '#4ECDC4', '#FFD93D', '#FF6B9D', '#95E1D3'][Math.floor(Math.random() * 5)]
-                });
-            }
-
-            // ══════ HAMAS PIECES (decorative) ══════
-            for (let i = 0; i < 5; i++) {
-                const pos = findValidPosition(25);
-                worldObjects.push({
-                    type: 'hamsa',
-                    x: pos.x,
-                    y: pos.y,
-                    size: 20 + Math.random() * 15
-                });
-            }
-
-            // ══════ STAR OF DAVID DECORATIONS ══════
-            for (let i = 0; i < 7; i++) {
-                const pos = findValidPosition(20);
-                worldObjects.push({
-                    type: 'starDecoration',
-                    x: pos.x,
-                    y: pos.y,
-                    size: 15 + Math.random() * 10,
-                    color: ['#FFD700', '#4ECDC4', '#FF6B6B'][Math.floor(Math.random() * 3)]
-                });
-            }
-
             // ══════ BUILDINGS (At bottom of map - Tel Aviv Bauhaus "White City") ══════
             buildings = [];
             const streetWidth = 150; // Wide streets for gameplay
@@ -4789,61 +4159,717 @@
         // ═══════════════════════════════════════════════════════════════════
         // DRAW WORLD OBJECT - TRUE TOP-DOWN Tel Aviv Beach Objects
         // ═══════════════════════════════════════════════════════════════════
-        // A1 EMOJI RENDERING SYSTEM - Professional Visual Quality
-        // ═══════════════════════════════════════════════════════════════════
-        const WORLD_OBJECT_EMOJIS = {
-            palmTree: ['🌴', '🌳', '🌲'],
-            umbrella: ['🏖️', '⛱️', '🏝️'],
-            beachChair: ['🪑', '🛋️', '🩴'],
-            lifeguardTower: ['🗼', '🏰', '🏛️'],
-            falafelStand: ['🥙', '🌯', '🍽️'],
-            surfboard: ['🏄', '🏄‍♂️', '🏄‍♀️'],
-            towel: ['🧺', '🛏️', '📿'],
-            cooler: ['🧊', '📦', '🎒'],
-            volleyballNet: ['🏐', '🥅', '🏟️'],
-            sandcastle: ['🏰', '🏯', '🦀'],
-            shell: ['🐚', '🦪', '🐌'],
-            matkot: ['🏓', '🎾', '🏸'],
-            israelFlag: ['🇮🇱', '🚩', '🏴'],
-            sunbather: ['😎', '🧘', '🤿'],
-            hamsa: ['👋', '🪬', '🧿'],
-            starDecoration: ['⭐', '🌟', '✨'],
-            shukStall: ['🏪', '🏭', '🏬'],
-            etrog: ['🍋', '🍊', '🥝'],
-            menorah: ['🕎', '🕯️', '🏮'],
-            torah: ['📜', '📖', '📚'],
-            synagogue: ['🕍', '🕌', '⛪'],
-            crate: ['📦', '🗳️', '📮'],
-            bench: ['🪑', '🛋️', '🪵'],
-            fountain: ['⛲', '🌊', '💧']
-        };
-
-        function drawEmojiObject(obj, sx, sy) {
-            const emoji = WORLD_OBJECT_EMOJIS[obj.type]?.[0] || '📦';
-            const size = obj.size || 48;
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.beginPath();
-            ctx.ellipse(sx + 4, sy + 4, size * 0.4, size * 0.3, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Emoji text
-            ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(emoji, sx, sy);
-        }
-
         function drawWorldObject(obj) {
             const sx = obj.x - camera.x;
             const sy = obj.y - camera.y;
 
             // Culling
-            if (sx < -100 || sx > W + 100 || sy < -100 || sy > H + 100) return;
+            if (sx < -300 || sx > W + 300 || sy < -300 || sy > H + 300) return;
 
-            // A1: Use professional emoji rendering for all objects
-            drawEmojiObject(obj, sx, sy);
+            ctx.save();
+            ctx.translate(sx, sy);
+
+            const time = Date.now() / 1000;
+
+            switch (obj.type) {
+                case 'palmTree':
+                    // TRUE TOP-DOWN: Circular trunk center with fronds radiating outward as leaf shadows
+                    const sway = Math.sin(time * 1.2 + obj.sway) * 3;
+                    const h = obj.height;
+                    const frondRadius = h * 0.6;
+
+                    // Shadow cast by fronds (offset to simulate sun angle)
+                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.beginPath();
+                    ctx.ellipse(15, 20, frondRadius * 0.9, frondRadius * 0.7, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Fronds radiating outward (top-down view - like a star)
+                    for (let i = 0; i < 9; i++) {
+                        const angle = (i / 9) * Math.PI * 2 + sway * 0.05;
+                        const frondLen = frondRadius * (0.8 + (i % 2) * 0.3);
+                        const frondSway = Math.sin(time * 2 + i) * 3;
+
+                        // Frond shape (elongated leaf from center)
+                        const frondGrad = ctx.createLinearGradient(0, 0, Math.cos(angle) * frondLen, Math.sin(angle) * frondLen);
+                        frondGrad.addColorStop(0, '#2E8B57');
+                        frondGrad.addColorStop(0.5, '#228B22');
+                        frondGrad.addColorStop(1, '#1E6B1E');
+                        ctx.fillStyle = frondGrad;
+
+                        ctx.beginPath();
+                        const tipX = Math.cos(angle) * frondLen + frondSway * Math.cos(angle + Math.PI / 2);
+                        const tipY = Math.sin(angle) * frondLen + frondSway * Math.sin(angle + Math.PI / 2);
+                        const side1X = Math.cos(angle + 0.4) * frondLen * 0.3;
+                        const side1Y = Math.sin(angle + 0.4) * frondLen * 0.3;
+                        const side2X = Math.cos(angle - 0.4) * frondLen * 0.3;
+                        const side2Y = Math.sin(angle - 0.4) * frondLen * 0.3;
+
+                        ctx.moveTo(0, 0);
+                        ctx.quadraticCurveTo(side1X, side1Y, tipX, tipY);
+                        ctx.quadraticCurveTo(side2X, side2Y, 0, 0);
+                        ctx.fill();
+
+                        // Frond spine
+                        ctx.strokeStyle = '#1E5E1E';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(tipX * 0.9, tipY * 0.9);
+                        ctx.stroke();
+
+                        // Leaf detail lines
+                        ctx.strokeStyle = 'rgba(30,70,30,0.4)';
+                        ctx.lineWidth = 1;
+                        for (let l = 0.3; l < 0.9; l += 0.15) {
+                            const lx = Math.cos(angle) * frondLen * l;
+                            const ly = Math.sin(angle) * frondLen * l;
+                            ctx.beginPath();
+                            ctx.moveTo(lx, ly);
+                            ctx.lineTo(lx + Math.cos(angle + Math.PI / 2) * 8, ly + Math.sin(angle + Math.PI / 2) * 8);
+                            ctx.moveTo(lx, ly);
+                            ctx.lineTo(lx + Math.cos(angle - Math.PI / 2) * 8, ly + Math.sin(angle - Math.PI / 2) * 8);
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Center trunk (top view - circular)
+                    const trunkGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
+                    trunkGrad.addColorStop(0, '#8B7355');
+                    trunkGrad.addColorStop(0.5, '#6B5344');
+                    trunkGrad.addColorStop(1, '#5D4037');
+                    ctx.fillStyle = trunkGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Trunk ring texture
+                    ctx.strokeStyle = 'rgba(93,64,55,0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Coconuts clustered at center
+                    ctx.fillStyle = '#5D4037';
+                    for (let c = 0; c < 3; c++) {
+                        const ca = (c / 3) * Math.PI * 2 + time * 0.1;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(ca) * 5, Math.sin(ca) * 5, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Coconut highlight
+                        ctx.fillStyle = '#7B6355';
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(ca) * 5 - 1, Math.sin(ca) * 5 - 1, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#5D4037';
+                    }
+                    break;
+
+                case 'umbrella':
+                    // TRUE TOP-DOWN: Full circular canopy from above with radial segments
+
+                    // Shadow offset (sun angle)
+                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(12, 12, 42, 38, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Full circular umbrella canopy
+                    const umbRadius = 40;
+                    const umbGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, umbRadius);
+                    umbGrad.addColorStop(0, lighten(obj.color, 40));
+                    umbGrad.addColorStop(0.3, lighten(obj.color, 20));
+                    umbGrad.addColorStop(0.7, obj.color);
+                    umbGrad.addColorStop(1, darken(obj.color, 15));
+                    ctx.fillStyle = umbGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, umbRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Radial segments (8 alternating colored segments)
+                    for (let seg = 0; seg < 8; seg++) {
+                        if (seg % 2 === 0) {
+                            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.arc(0, 0, umbRadius - 2, (seg / 8) * Math.PI * 2, ((seg + 1) / 8) * Math.PI * 2);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                    }
+
+                    // Umbrella ribs
+                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                    ctx.lineWidth = 1.5;
+                    for (let r = 0; r < 8; r++) {
+                        const ribAngle = (r / 8) * Math.PI * 2;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(ribAngle) * umbRadius, Math.sin(ribAngle) * umbRadius);
+                        ctx.stroke();
+                    }
+
+                    // Scalloped edge
+                    ctx.strokeStyle = darken(obj.color, 30);
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    for (let s = 0; s < 16; s++) {
+                        const a1 = (s / 16) * Math.PI * 2;
+                        const a2 = ((s + 0.5) / 16) * Math.PI * 2;
+                        const a3 = ((s + 1) / 16) * Math.PI * 2;
+                        const r1 = umbRadius;
+                        const r2 = umbRadius - 4;
+                        if (s === 0) ctx.moveTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
+                        ctx.quadraticCurveTo(Math.cos(a2) * r2, Math.sin(a2) * r2, Math.cos(a3) * r1, Math.sin(a3) * r1);
+                    }
+                    ctx.stroke();
+
+                    // Center pole cap
+                    ctx.fillStyle = '#DEB887';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#C4A67C';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'beachChair':
+                    ctx.rotate(obj.rot);
+                    // TRUE TOP-DOWN: Rectangular seat from above with frame
+
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.beginPath();
+                    ctx.ellipse(8, 8, 28, 20, 0.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Chair frame (aluminum tubes)
+                    ctx.strokeStyle = '#C0C0C0';
+                    ctx.lineWidth = 4;
+                    // Side rails
+                    ctx.beginPath();
+                    ctx.moveTo(-18, -28);
+                    ctx.lineTo(-18, 28);
+                    ctx.moveTo(18, -28);
+                    ctx.lineTo(18, 28);
+                    ctx.stroke();
+                    // Cross bars
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-18, -25);
+                    ctx.lineTo(18, -25);
+                    ctx.moveTo(-18, 25);
+                    ctx.lineTo(18, 25);
+                    ctx.moveTo(-18, 0);
+                    ctx.lineTo(18, 0);
+                    ctx.stroke();
+
+                    // Fabric seat (top view)
+                    ctx.fillStyle = obj.color;
+                    ctx.fillRect(-15, -22, 30, 44);
+
+                    // Fabric stripes
+                    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                    for (let s = -20; s < 25; s += 8) {
+                        ctx.fillRect(-15, s, 30, 4);
+                    }
+
+                    // Frame end caps
+                    ctx.fillStyle = '#888';
+                    [[-18, -28], [-18, 28], [18, -28], [18, 28]].forEach(([fx, fy]) => {
+                        ctx.beginPath();
+                        ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    break;
+
+                case 'lifeguardTower':
+                    // TRUE TOP-DOWN: Square roof from above with shadow cast
+
+                    // Large shadow cast by tower
+                    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+                    ctx.beginPath();
+                    ctx.moveTo(25, 15);
+                    ctx.lineTo(80, 50);
+                    ctx.lineTo(65, 75);
+                    ctx.lineTo(10, 40);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Roof (square with slight pyramid - top down)
+                    const roofGrad = ctx.createLinearGradient(-35, -35, 35, 35);
+                    roofGrad.addColorStop(0, '#FF4444');
+                    roofGrad.addColorStop(0.5, '#E63946');
+                    roofGrad.addColorStop(1, '#CC2233');
+                    ctx.fillStyle = roofGrad;
+                    ctx.beginPath();
+                    ctx.rect(-35, -35, 70, 70);
+                    ctx.fill();
+
+                    // Roof pyramid lines (indicates 3D shape)
+                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-35, -35);
+                    ctx.lineTo(0, 0);
+                    ctx.moveTo(35, -35);
+                    ctx.lineTo(0, 0);
+                    ctx.moveTo(-35, 35);
+                    ctx.lineTo(0, 0);
+                    ctx.moveTo(35, 35);
+                    ctx.lineTo(0, 0);
+                    ctx.stroke();
+
+                    // Center peak point
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Flag pole from center
+                    ctx.fillStyle = '#333';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Flag (waving)
+                    const flagWave = Math.sin(time * 3) * 4;
+                    ctx.fillStyle = '#E63946';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -5);
+                    ctx.quadraticCurveTo(10 + flagWave, -10, 20, -8 + flagWave);
+                    ctx.lineTo(18, 2 + flagWave);
+                    ctx.quadraticCurveTo(8 + flagWave * 0.5, 0, 0, 3);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Roof edge highlight
+                    ctx.strokeStyle = '#FF6666';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-35, -35, 70, 70);
+                    break;
+
+                case 'falafelStand':
+                    // TRUE TOP-DOWN: Rectangular awning from above
+
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(15, 15, 50, 35, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Awning (rectangular, striped)
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-45, -30, 90, 60);
+
+                    // Awning stripes
+                    ctx.fillStyle = '#FF6B00';
+                    for (let s = -45; s < 45; s += 18) {
+                        ctx.fillRect(s, -30, 9, 60);
+                    }
+
+                    // Awning edge scallops
+                    ctx.fillStyle = '#FFD700';
+                    for (let sc = -40; sc < 45; sc += 12) {
+                        ctx.beginPath();
+                        ctx.arc(sc, 30, 6, 0, Math.PI);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(sc, -30, 6, Math.PI, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Cart visible at edges (peeking from under awning)
+                    ctx.fillStyle = '#E8E8E8';
+                    ctx.fillRect(-48, -33, 6, 66);
+                    ctx.fillRect(42, -33, 6, 66);
+
+                    // Text on awning
+                    ctx.fillStyle = '#8B4513';
+                    ctx.font = 'bold 14px Heebo';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('FALAFEL', 0, 5);
+
+                    // Falafel balls visible on cart
+                    ctx.fillStyle = '#8B6914';
+                    for (let f = 0; f < 6; f++) {
+                        const fx = -25 + (f % 3) * 25;
+                        const fy = -15 + Math.floor(f / 3) * 20;
+                        ctx.beginPath();
+                        ctx.arc(fx, fy, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Texture dots
+                        ctx.fillStyle = '#6B5510';
+                        ctx.beginPath();
+                        ctx.arc(fx - 1, fy - 1, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#8B6914';
+                    }
+                    break;
+
+                case 'surfboard':
+                    ctx.rotate(obj.rot);
+                    // Surfboard is already fairly top-down (lying flat) - minor adjustments
+
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(4, 4, 12, 42, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Board
+                    const boardGrad = ctx.createLinearGradient(-12, 0, 12, 0);
+                    boardGrad.addColorStop(0, darken(obj.color, 15));
+                    boardGrad.addColorStop(0.5, obj.color);
+                    boardGrad.addColorStop(1, darken(obj.color, 15));
+                    ctx.fillStyle = boardGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 10, 40, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Board outline
+                    ctx.strokeStyle = darken(obj.color, 35);
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Center stripe
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.fillRect(-2, -35, 4, 70);
+
+                    // Nose and tail accents
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -35, 6, 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Fin (visible as small shape at tail)
+                    ctx.fillStyle = darken(obj.color, 40);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 35, 4, 6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Wax texture
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    for (let wx = -6; wx <= 6; wx += 4) {
+                        for (let wy = -20; wy <= 20; wy += 6) {
+                            ctx.beginPath();
+                            ctx.arc(wx + Math.sin(wy) * 2, wy, 1.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    break;
+
+                case 'towel':
+                    ctx.rotate(obj.rot);
+                    // Towel is already top-down - keep as is with minor polish
+
+                    // Slight shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+                    ctx.fillRect(-23, -38, 50, 80);
+
+                    // Towel fabric
+                    ctx.fillStyle = obj.color;
+                    ctx.fillRect(-25, -40, 50, 80);
+
+                    // Pattern
+                    if (obj.pattern === 'stripes') {
+                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                        for (let s = -35; s < 40; s += 10) {
+                            ctx.fillRect(-25, s, 50, 5);
+                        }
+                    } else if (obj.pattern === 'dots') {
+                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                        for (let dx = -15; dx <= 15; dx += 15) {
+                            for (let dy = -30; dy <= 30; dy += 15) {
+                                ctx.beginPath();
+                                ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
+                    }
+
+                    // Fringe
+                    ctx.strokeStyle = darken(obj.color, 20);
+                    ctx.lineWidth = 1;
+                    for (let f = -23; f < 25; f += 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(f, -40);
+                        ctx.lineTo(f + (Math.sin(f) * 2), -47);
+                        ctx.moveTo(f, 40);
+                        ctx.lineTo(f + (Math.sin(f) * 2), 47);
+                        ctx.stroke();
+                    }
+
+                    // Fabric wrinkle lines
+                    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -20);
+                    ctx.quadraticCurveTo(0, -15, 20, -20);
+                    ctx.moveTo(-20, 15);
+                    ctx.quadraticCurveTo(5, 20, 20, 15);
+                    ctx.stroke();
+                    break;
+
+                case 'cooler':
+                    // TRUE TOP-DOWN: Lid rectangle with handle visible
+
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.beginPath();
+                    ctx.ellipse(6, 6, 22, 16, 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Cooler lid (top view)
+                    ctx.fillStyle = obj.color;
+                    ctx.beginPath();
+                    ctx.roundRect(-20, -15, 40, 30, 4);
+                    ctx.fill();
+
+                    // Lid texture lines
+                    ctx.strokeStyle = darken(obj.color, 20);
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(-20, -15, 40, 30, 4);
+                    ctx.stroke();
+
+                    // Lid ridge
+                    ctx.strokeStyle = lighten(obj.color, 20);
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(-16, -11, 32, 22, 2);
+                    ctx.stroke();
+
+                    // Handle
+                    ctx.fillStyle = '#222';
+                    ctx.beginPath();
+                    ctx.roundRect(-10, -4, 20, 8, 3);
+                    ctx.fill();
+
+                    // Handle grip texture
+                    ctx.fillStyle = '#444';
+                    for (let hx = -6; hx <= 6; hx += 4) {
+                        ctx.fillRect(hx, -2, 2, 4);
+                    }
+
+                    // Latch hints on sides
+                    ctx.fillStyle = '#888';
+                    ctx.fillRect(-22, -3, 4, 6);
+                    ctx.fillRect(18, -3, 4, 6);
+                    break;
+
+                case 'volleyballNet':
+                    // TRUE TOP-DOWN: Two circles (pole tops) with line between
+
+                    // Shadow of net
+                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                    ctx.fillRect(-78, 8, 156, 12);
+
+                    // Net from above (thin rectangle)
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.fillRect(-77, -3, 154, 6);
+
+                    // Net mesh pattern (top view)
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.lineWidth = 1;
+                    for (let nx = -72; nx <= 72; nx += 12) {
+                        ctx.beginPath();
+                        ctx.moveTo(nx, -3);
+                        ctx.lineTo(nx, 3);
+                        ctx.stroke();
+                    }
+
+                    // Pole tops (circles)
+                    ctx.fillStyle = '#222';
+                    ctx.beginPath();
+                    ctx.arc(-77, 0, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(77, 0, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Pole cap detail
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(-77, 0, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(77, 0, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Net tension lines
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(-77, 0);
+                    ctx.lineTo(-90, -15);
+                    ctx.moveTo(77, 0);
+                    ctx.lineTo(90, -15);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    break;
+
+                case 'sandcastle':
+                    const sc = obj.size;
+                    // TRUE TOP-DOWN: Circular base with smaller tower circles on top
+
+                    // Main base shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(5, 5, sc * 1.1, sc * 0.9, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Base mound (circular from above)
+                    ctx.fillStyle = '#D2B48C';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sc, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Sandy texture on base
+                    ctx.fillStyle = 'rgba(160,120,80,0.3)';
+                    for (let t = 0; t < 12; t++) {
+                        const ta = (t / 12) * Math.PI * 2;
+                        const tr = sc * 0.5 + Math.sin(t * 3) * sc * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(ta) * tr, Math.sin(ta) * tr, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Main central tower (circle from above)
+                    ctx.fillStyle = '#DEB887';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sc * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Tower top detail
+                    ctx.strokeStyle = '#C4A070';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sc * 0.35, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Battlements on main tower (small rectangles around edge)
+                    ctx.fillStyle = '#C9A86C';
+                    for (let b = 0; b < 6; b++) {
+                        const ba = (b / 6) * Math.PI * 2;
+                        const bx = Math.cos(ba) * sc * 0.35;
+                        const by = Math.sin(ba) * sc * 0.35;
+                        ctx.fillRect(bx - 3, by - 3, 6, 6);
+                    }
+
+                    // Corner towers (4 smaller circles)
+                    const cornerAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
+                    cornerAngles.forEach((ca, i) => {
+                        const cx = Math.cos(ca) * sc * 0.7;
+                        const cy = Math.sin(ca) * sc * 0.7;
+
+                        ctx.fillStyle = '#DEB887';
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, sc * 0.2, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.strokeStyle = '#C4A070';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+
+                        // Mini flags
+                        ctx.fillStyle = ['#E63946', '#4169E1', '#228B22', '#FFD700'][i];
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - sc * 0.15);
+                        ctx.lineTo(cx + 8, cy - sc * 0.1);
+                        ctx.lineTo(cx, cy - sc * 0.05);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Flag pole
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(cx, cy - sc * 0.18);
+                        ctx.stroke();
+                    });
+
+                    // Moat suggestion (dashed circle)
+                    ctx.strokeStyle = 'rgba(100,150,200,0.3)';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sc * 1.1, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    break;
+
+                case 'shell':
+                    ctx.rotate(obj.rot);
+                    const shellS = obj.size;
+                    // Shells are small and already essentially top-down - keep as is
+
+                    if (obj.variant === 0) {
+                        // Spiral shell
+                        ctx.fillStyle = '#FFF5EE';
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, shellS, shellS * 0.6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = '#DEB887';
+                        ctx.lineWidth = 1;
+                        for (let sp = 0; sp < 5; sp++) {
+                            ctx.beginPath();
+                            ctx.arc(shellS * 0.2, 0, shellS * 0.3 + sp * 2, 0, Math.PI * 1.5);
+                            ctx.stroke();
+                        }
+                    } else if (obj.variant === 1) {
+                        // Scallop shell
+                        ctx.fillStyle = '#FFE4C4';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, shellS, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = '#DEB887';
+                        ctx.lineWidth = 1;
+                        for (let r = 0; r < 8; r++) {
+                            const rAngle = (r / 8) * Math.PI * 2;
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(Math.cos(rAngle) * shellS, Math.sin(rAngle) * shellS);
+                            ctx.stroke();
+                        }
+                    } else {
+                        // Starfish
+                        ctx.fillStyle = '#FF6B6B';
+                        for (let arm = 0; arm < 5; arm++) {
+                            const armAngle = (arm / 5) * Math.PI * 2 - Math.PI / 2;
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(
+                                Math.cos(armAngle - 0.2) * shellS * 0.3,
+                                Math.sin(armAngle - 0.2) * shellS * 0.3
+                            );
+                            ctx.lineTo(
+                                Math.cos(armAngle) * shellS,
+                                Math.sin(armAngle) * shellS
+                            );
+                            ctx.lineTo(
+                                Math.cos(armAngle + 0.2) * shellS * 0.3,
+                                Math.sin(armAngle + 0.2) * shellS * 0.3
+                            );
+                            ctx.fill();
+                        }
+                        // Starfish center
+                        ctx.fillStyle = '#FF8888';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, shellS * 0.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    break;
+            }
+
+            ctx.restore();
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -4852,13 +4878,9 @@
         function drawBackground() {
             const time = Date.now() / 1000;
             const ws = CFG.WORLD_SIZE;
-            const skyColors = getSkyColors();
-            const ambient = getAmbientLight();
 
-            // ══════ CLEAN SAND BASE (Full screen - tinted by ambient light) ══════
-            const sandBrightness = Math.floor(232 * ambient + 30);
-            const sandColor = `rgb(${sandBrightness}, ${Math.floor(212 * ambient + 20)}, ${Math.floor(168 * ambient + 15)})`;
-            ctx.fillStyle = sandColor;
+            // ══════ CLEAN SAND BASE ══════
+            ctx.fillStyle = '#E8D4A8';
             ctx.fillRect(0, 0, W, H);
 
             // ══════ OCEAN AT TOP OF WORLD (Fixed in world space) ══════
@@ -4928,30 +4950,39 @@
                 }
             }
 
-            // ══════ STREETS (Draw BEFORE buildings for correct z-order) ══════
-            const streetStartY = CFG.WORLD_SIZE / 2 - 700;
-            const worldLeftX = -CFG.WORLD_SIZE / 2;
-            const worldRightX = CFG.WORLD_SIZE / 2;
+            // ══════ STREETS between buildings (Tel Aviv style) - Draw BEFORE buildings ══════
+            // Draw street markings in world coordinates
+            const streetStartY = ws / 2 - 700;
+            const worldLeftX = -ws / 2;
+            const worldRightX = ws / 2;
 
+            // Street pavement texture (darker strips) - world fixed
             for (let row = 0; row < 3; row++) {
                 const streetWorldY = streetStartY + row * 350 + 200;
                 const streetScreenY = streetWorldY - camera.y;
                 const streetScreenX = worldLeftX - camera.x;
+                const streetWidth = ws;
+
                 if (streetScreenY > -150 && streetScreenY < H + 150) {
                     ctx.fillStyle = 'rgba(60,60,65,0.3)';
-                    ctx.fillRect(streetScreenX, streetScreenY, CFG.WORLD_SIZE, 150);
+                    ctx.fillRect(streetScreenX, streetScreenY, streetWidth, 150);
                 }
             }
+
+            // Street center lines - world fixed
             ctx.strokeStyle = 'rgba(255,255,255,0.25)';
             ctx.lineWidth = 4;
             ctx.setLineDash([30, 30]);
             for (let row = 0; row < 3; row++) {
                 const lineWorldY = streetStartY + row * 350 + 275;
                 const lineScreenY = lineWorldY - camera.y;
+                const lineStartX = worldLeftX - camera.x;
+                const lineEndX = worldRightX - camera.x;
+
                 if (lineScreenY > -50 && lineScreenY < H + 50) {
                     ctx.beginPath();
-                    ctx.moveTo(worldLeftX - camera.x, lineScreenY);
-                    ctx.lineTo(worldRightX - camera.x, lineScreenY);
+                    ctx.moveTo(lineStartX, lineScreenY);
+                    ctx.lineTo(lineEndX, lineScreenY);
                     ctx.stroke();
                 }
             }
@@ -5279,14 +5310,10 @@
             // Apply starting weapon
             applyStartingWeapon(player);
 
-            // Clear arrays and return objects to pools
             enemies = [];
-            projectiles.forEach(p => returnPooledProjectile(p));
             projectiles = [];
             pickups = [];
-            particles.forEach(p => returnPooledParticle(p));
             particles = [];
-            floatingTexts.forEach(t => returnPooledFloatingText(t));
             floatingTexts = [];
             if (!player.weapons.dreidel) dreidels = [];
             timers = { spawn: 0, fire: 0, hummus: 0, shofar: 0 };
@@ -5297,13 +5324,6 @@
             boss = null;
 
             generateWorld();
-
-            // CRITICAL FIX: Build spatial grid for buildings immediately after world generation
-            // This ensures safe spawn logic works correctly from the very first frame
-            buildingGrid.build(buildings);
-
-            // PERFORMANCE: Pre-render enemy sprites for significant FPS boost
-            preRenderEnemySprites();
 
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('weaponSelectScreen').classList.add('hidden');
@@ -5430,63 +5450,6 @@
             document.getElementById('levelUpScreen').classList.remove('hidden');
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // SAFE SPAWN SYSTEM - Prevent enemies from spawning in buildings
-        // ═══════════════════════════════════════════════════════════════════
-        function isPositionInBuilding(x, y, radius = 30) {
-            // Use spatial grid for efficient lookup
-            const nearbyBuildings = buildingGrid.getNearby(x, y, radius + 200);
-
-            for (const b of nearbyBuildings) {
-                const isoOffset = b.height * 0.5;
-                const collisionTop = b.y - isoOffset;
-                const collisionBottom = b.y + b.depth;
-
-                if (x + radius > b.x && x - radius < b.x + b.width &&
-                    y + radius > collisionTop && y - radius < collisionBottom) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function isTooCloseToPlayer(x, y, minDist = 250) {
-            const distToPlayer = Math.hypot(x - player.x, y - player.y);
-            return distToPlayer < minDist;
-        }
-
-        function findSafeSpawnPosition(preferredX, preferredY, maxAttempts = 30) {
-            // CRITICAL FIX: Ensure minimum distance from player
-            const MIN_PLAYER_DISTANCE = 250;
-
-            // First try the preferred position (must be safe AND far from player)
-            if (!isPositionInBuilding(preferredX, preferredY, 40) &&
-                !isTooCloseToPlayer(preferredX, preferredY, MIN_PLAYER_DISTANCE)) {
-                return { x: preferredX, y: preferredY, safe: true };
-            }
-
-            // Try random positions around the preferred location
-            for (let i = 0; i < maxAttempts; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 100 + Math.random() * 300;
-                const testX = preferredX + Math.cos(angle) * dist;
-                const testY = preferredY + Math.sin(angle) * dist;
-
-                if (!isPositionInBuilding(testX, testY, 40) &&
-                    !isTooCloseToPlayer(testX, testY, MIN_PLAYER_DISTANCE)) {
-                    return { x: testX, y: testY, safe: true };
-                }
-            }
-
-            // Last resort: spawn at edge of screen away from player
-            const angle = Math.random() * Math.PI * 2;
-            const edgeDist = Math.max(W, H) * 0.6;
-            const edgeX = player.x + Math.cos(angle) * edgeDist;
-            const edgeY = player.y + Math.sin(angle) * edgeDist;
-
-            return { x: edgeX, y: edgeY, safe: false };
-        }
-
         function spawnEnemy() {
             // Limit max enemies for performance
             if (enemies.length >= CFG.MAX_ENEMIES) return;
@@ -5496,71 +5459,15 @@
             const angle = Math.random() * Math.PI * 2;
             const dist = Math.max(W, H) / 2 + 150;
 
-            // Calculate preferred spawn position
-            const preferredX = player.x + Math.cos(angle) * dist;
-            const preferredY = player.y + Math.sin(angle) * dist;
-
-            // Find safe position that avoids buildings
-            const safePos = findSafeSpawnPosition(preferredX, preferredY);
-
             enemies.push({
                 type: type,
-                x: safePos.x,
-                y: safePos.y,
+                x: player.x + Math.cos(angle) * dist,
+                y: player.y + Math.sin(angle) * dist,
                 hp: ENEMY_TYPES[type].hp * (1 + gameTime / 100),
                 maxHp: ENEMY_TYPES[type].hp * (1 + gameTime / 100),
                 flash: 0,
                 anim: Math.random() * Math.PI * 2,
-                knockback: { x: 0, y: 0 },
-                stuckTime: 0, // Track if enemy gets stuck
-                lastPos: { x: safePos.x, y: safePos.y } // For stuck detection
-            });
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // STUCK ENEMY DETECTION & TELEPORT SYSTEM
-        // ═══════════════════════════════════════════════════════════════════
-        function updateStuckEnemies(dt) {
-            enemies.forEach(e => {
-                // Check if enemy moved significantly
-                const moveDist = Math.hypot(e.x - e.lastPos.x, e.y - e.lastPos.y);
-
-                if (moveDist < 1) {
-                    // Enemy barely moved, might be stuck
-                    e.stuckTime += dt;
-
-                    // If stuck for more than 2 seconds, teleport to safety
-                    if (e.stuckTime > 2.0) {
-                        // CRITICAL FIX: Teleport to spawn zone away from player, not near them!
-                        const angle = Math.random() * Math.PI * 2;
-                        const spawnDist = Math.max(W, H) * 0.5 + 100;
-                        const spawnX = player.x + Math.cos(angle) * spawnDist;
-                        const spawnY = player.y + Math.sin(angle) * spawnDist;
-
-                        const safePos = findSafeSpawnPosition(spawnX, spawnY);
-                        e.x = safePos.x;
-                        e.y = safePos.y;
-                        e.stuckTime = 0;
-                        e.lastPos.x = e.x;
-                        e.lastPos.y = e.y;
-
-                        // Visual feedback for teleport
-                        spawnParticles(e.x, e.y, '#4ECDC4', 8);
-                        floatingTexts.push({
-                            x: e.x, y: e.y - 30, text: '🔄 TELEPORT',
-                            life: 1.0, color: '#4ECDC4', size: 14
-                        });
-                    }
-                } else {
-                    // Enemy is moving normally
-                    e.stuckTime = Math.max(0, e.stuckTime - dt * 0.5);
-                }
-
-                // Update last position (only every 0.5 seconds to avoid jitter detection)
-                if (Math.floor(gameTime * 2) !== Math.floor((gameTime - dt) * 2)) {
-                    e.lastPos.x = e.x;
-                    e.lastPos.y = e.y;
-                }
+                knockback: { x: 0, y: 0 }
             });
         }
 
@@ -6188,256 +6095,58 @@
                 if (player.projCount > 1) {
                     angle += ((i - (player.projCount - 1) / 2) * spread / Math.max(1, player.projCount - 1));
                 }
-                const p = getPooledProjectile();
-                p.x = player.x;
-                p.y = player.y;
-                p.startX = player.x;
-                p.startY = player.y;
-                p.maxRange = player.range;
-                p.angle = angle;
-                p.damage = player.damage;
-                p.pierce = player.pierce;
-                p.rot = 0;
-                p.hits = new Set();
-                projectiles.push(p);
+                projectiles.push({
+                    x: player.x,
+                    y: player.y,
+                    startX: player.x, // Track origin for range calculation
+                    startY: player.y,
+                    maxRange: player.range, // Store max range at creation time
+                    angle: angle,
+                    damage: player.damage,
+                    pierce: player.pierce,
+                    rot: 0,
+                    hits: new Set()
+                });
             }
             // Track projectiles fired
             sessionStats.projectilesFired += player.projCount;
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // A1 COMBO SYSTEM - Addictive gameplay mechanic
-        // ═══════════════════════════════════════════════════════════════════
-        function updateComboSystem(dt) {
-            // Decay combo timer
-            if (comboSystem.count > 0) {
-                comboSystem.timer -= dt;
-
-                if (comboSystem.timer <= 0) {
-                    // Combo broken - award bonus if it was good
-                    if (comboSystem.count >= 10) {
-                        floatingTexts.push({
-                            x: player.x,
-                            y: player.y - 60,
-                            text: `🔥 COMBO x${comboSystem.count} COMPLETE! 🔥`,
-                            color: '#FF6B35',
-                            size: 24,
-                            life: 2,
-                            vy: -25
-                        });
-
-                        // Bonus XP for high combos
-                        const bonusXP = Math.floor(comboSystem.count * 2 * player.xpMult);
-                        player.xp += bonusXP;
-                        floatingTexts.push({
-                            x: player.x,
-                            y: player.y - 90,
-                            text: `+${bonusXP} COMBO BONUS`,
-                            color: '#FFD700',
-                            size: 18,
-                            life: 1.5,
-                            vy: -20
-                        });
-                    }
-
-                    // Reset combo
-                    comboSystem.count = 0;
-                    comboSystem.multiplier = 1;
-                }
-            }
-        }
-
-        function addComboKill() {
-            const now = gameTime;
-
-            // Check if within combo window
-            if (now - comboSystem.lastKillTime < comboSystem.maxTime) {
-                comboSystem.count++;
-                comboSystem.timer = comboSystem.maxTime;
-
-                // Calculate multiplier (capped at 5x)
-                comboSystem.multiplier = Math.min(5, 1 + Math.floor(comboSystem.count / 5) * 0.5);
-
-                // Track best combo
-                comboSystem.bestCombo = Math.max(comboSystem.bestCombo, comboSystem.count);
-                comboSystem.totalComboKills++;
-
-                // Visual feedback for milestone combos
-                if (comboSystem.count % 10 === 0) {
-                    floatingTexts.push({
-                        x: player.x + (Math.random() - 0.5) * 100,
-                        y: player.y - 80,
-                        text: `🔥 ${comboSystem.count} COMBO! 🔥`,
-                        color: comboSystem.count >= 50 ? '#FFD700' : '#FF6B35',
-                        size: 28,
-                        life: 1.5,
-                        vy: -30
-                    });
-
-                    // Screen shake for big combos
-                    if (comboSystem.count >= 20) {
-                        camera.shake = Math.min(10, comboSystem.count / 5);
-                    }
-                }
-            } else {
-                // Start new combo
-                comboSystem.count = 1;
-                comboSystem.timer = comboSystem.maxTime;
-                comboSystem.multiplier = 1;
-            }
-
-            comboSystem.lastKillTime = now;
-        }
-
-        function getComboMultiplier() {
-            return comboSystem.multiplier;
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // A1 OFFSCREEN WORLD CACHE - Performance optimization
-        // ═══════════════════════════════════════════════════════════════════
-        function initWorldCache() {
-            worldCacheCanvas = document.createElement('canvas');
-            worldCacheCanvas.width = Math.min(CFG.OFFSCREEN_CACHE_SIZE, window.innerWidth * 2);
-            worldCacheCanvas.height = Math.min(CFG.OFFSCREEN_CACHE_SIZE, window.innerHeight * 2);
-            worldCacheCtx = worldCacheCanvas.getContext('2d');
-        }
-
-        function invalidateWorldCache() {
-            worldCacheValid = false;
-        }
-
-        function renderWorldToCache() {
-            if (!worldCacheCtx) initWorldCache();
-
-            const cacheW = worldCacheCanvas.width;
-            const cacheH = worldCacheCanvas.height;
-
-            // Clear cache
-            worldCacheCtx.clearRect(0, 0, cacheW, cacheH);
-
-            // Save current context state
-            const savedCtx = ctx;
-            ctx = worldCacheCtx;
-
-            // Calculate cache view bounds (centered on camera)
-            const cacheCameraX = camera.x - cacheW / 2;
-            const cacheCameraY = camera.y - cacheH / 2;
-
-            // Render static world elements
-            // Ground tiles
-            drawGroundTiles(cacheCameraX, cacheCameraY, cacheW, cacheH);
-
-            // Buildings (static part only)
-            buildings.forEach(b => {
-                const sx = b.x - cacheCameraX;
-                const sy = b.y - cacheCameraY;
-                if (sx > -300 && sx < cacheW + 300 && sy > -300 && sy < cacheH + 300) {
-                    drawBuildingStatic(b, sx, sy);
-                }
-            });
-
-            // Restore context
-            ctx = savedCtx;
-
-            worldCacheValid = true;
-            lastCacheCameraX = camera.x;
-            lastCacheCameraY = camera.y;
-        }
-
-        function drawCachedWorld() {
-            if (!worldCacheValid || !worldCacheCanvas) {
-                renderWorldToCache();
-            }
-
-            // Check if we need to regenerate cache (camera moved too far)
-            const cacheDist = Math.hypot(camera.x - lastCacheCameraX, camera.y - lastCacheCameraY);
-            if (cacheDist > CACHE_REGENERATE_DISTANCE) {
-                renderWorldToCache();
-            }
-
-            // Draw the cached world centered on camera
-            const cacheW = worldCacheCanvas.width;
-            const cacheH = worldCacheCanvas.height;
-            const drawX = (W - cacheW) / 2 + (lastCacheCameraX - camera.x);
-            const drawY = (H - cacheH) / 2 + (lastCacheCameraY - camera.y);
-
-            ctx.drawImage(worldCacheCanvas, drawX, drawY);
-        }
-
-        function drawGroundTiles(viewX, viewY, viewW, viewH) {
-            // Sand pattern
-            const tileSize = 100;
-            const startX = Math.floor(viewX / tileSize) * tileSize;
-            const startY = Math.floor(viewY / tileSize) * tileSize;
-
-            for (let x = startX; x < viewX + viewW + tileSize; x += tileSize) {
-                for (let y = startY; y < viewY + viewH + tileSize; y += tileSize) {
-                    // Sand color variation
-                    const sandVariation = Math.sin(x * 0.01) * Math.cos(y * 0.01) * 10;
-                    const baseColor = { r: 238 + sandVariation, g: 203 + sandVariation, b: 140 + sandVariation };
-                    ctx.fillStyle = `rgb(${baseColor.r}, ${baseColor.g}, ${baseColor.b})`;
-                    ctx.fillRect(x - viewX, y - viewY, tileSize + 1, tileSize + 1);
-
-                    // Beach texture dots
-                    if ((x + y) % 3 === 0) {
-                        ctx.fillStyle = `rgba(220, 180, 100, 0.3)`;
-                        ctx.fillRect(x - viewX + 20, y - viewY + 20, 4, 4);
-                    }
-                }
-            }
-        }
-
-        function drawBuildingStatic(b, sx, sy) {
-            // Simplified building render for cache
-            const isoHeight = b.height * 0.5;
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.beginPath();
-            ctx.ellipse(sx + b.width / 2, sy + b.depth - 5, b.width / 2, b.depth / 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Building body (simplified)
-            ctx.fillStyle = b.color || '#C4A574';
-            ctx.fillRect(sx, sy - isoHeight, b.width, b.depth + isoHeight);
-        }
-
         function spawnParticles(x, y, color, count = 8) {
+            // Always spawn full particle count for visual quality
+            const actualCount = count;
+
             // Cap total particles
             const available = CFG.MAX_PARTICLES - particles.length;
-            const toSpawn = Math.min(count, available);
+            const toSpawn = Math.min(actualCount, available);
 
             for (let i = 0; i < toSpawn; i++) {
-                const p = getPooledParticle();
-                p.x = x;
-                p.y = y;
-                p.vx = (Math.random() - 0.5) * 200;
-                p.vy = (Math.random() - 0.5) * 200;
-                p.size = 3 + Math.random() * 4;
-                p.color = color;
-                p.life = 0.5 + Math.random() * 0.3;
-                particles.push(p);
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 200,
+                    vy: (Math.random() - 0.5) * 200,
+                    size: 3 + Math.random() * 4,
+                    color: color,
+                    life: 0.5 + Math.random() * 0.3
+                });
             }
         }
 
         function spawnFloatingText(x, y, text, color = '#FFD700') {
             // Cap floating texts for performance
             if (floatingTexts.length >= CFG.MAX_FLOATING_TEXTS) {
-                // Return oldest to pool
-                const old = floatingTexts.shift();
-                returnPooledFloatingText(old);
+                // Remove oldest
+                floatingTexts.shift();
             }
-            const t = getPooledFloatingText();
-            t.x = x;
-            t.y = y;
-            t.text = text;
-            t.color = color;
-            t.life = 1;
-            t.maxLife = 1; // Track max life for animation
-            t.scale = 0;   // Start at 0 for pop-in
-            t.vy = -80;
-            floatingTexts.push(t);
+            floatingTexts.push({
+                x: x,
+                y: y,
+                text: text,
+                color: color,
+                life: 1,
+                vy: -80
+            });
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -6460,23 +6169,9 @@
 
             gameTime += dt;
 
-            // ══════ UPDATE DAY/NIGHT CYCLE ══════
-            updateDayNightCycle(dt);
-
-            // ══════ CHECK DAILY CHALLENGES ══════
-            if (Math.floor(gameTime) !== Math.floor(gameTime - dt)) {
-                checkDailyChallenges();
-            }
-
             // ══════ REBUILD SPATIAL GRID ══════
             spatialGrid.clear();
             enemies.forEach(e => spatialGrid.insert(e));
-
-            // ══════ UPDATE STUCK ENEMIES (Emergency teleport system) ══════
-            updateStuckEnemies(dt);
-
-            // ══════ UPDATE COMBO SYSTEM ══════
-            updateComboSystem(dt);
 
             // ══════ PLAYER MOVEMENT ══════
             let vx = 0, vy = 0;
@@ -6504,8 +6199,9 @@
             let canMoveY = true;
 
             for (const b of buildings) {
-                // Isometric offset - buildings visually extend upward
+                // Isometric offset for 3D visual (buildings extend upward visually)
                 const isoOffset = b.height * 0.5;
+                // Collision box extends from b.y - isoOffset to b.y + b.depth
                 const collisionTop = b.y - isoOffset;
                 const collisionBottom = b.y + b.depth;
 
@@ -6705,18 +6401,6 @@
                     return;
                 }
 
-                // A1 FRAME SKIPPING: Distant enemies update less frequently
-                // Enemies beyond FRAME_SKIP_DISTANCE only update every other frame
-                const shouldSkipFrame = d > CFG.FRAME_SKIP_DISTANCE && (updateFrame + index) % 2 !== 0;
-                if (shouldSkipFrame) {
-                    // Still apply knockback even when skipping frames
-                    e.x += e.knockback.x * dt;
-                    e.y += e.knockback.y * dt;
-                    e.knockback.x *= 0.92;
-                    e.knockback.y *= 0.92;
-                    return;
-                }
-
                 // FULL UPDATE for visible, scheduled enemies
                 if (d > 0) {
                     // Calculate intended movement
@@ -6730,19 +6414,14 @@
                     let canMoveY = true;
 
                     for (const b of nearbyBuildings) {
-                        // Isometric offset - buildings visually extend upward
-                        const isoOffset = b.height * 0.5;
-                        const collisionTop = b.y - isoOffset;
-                        const collisionBottom = b.y + b.depth;
-
                         // X movement collision
                         if (newX + enemyRadius > b.x && newX - enemyRadius < b.x + b.width &&
-                            e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
+                            e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
                             canMoveX = false;
                         }
                         // Y movement collision
                         if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                            newY + enemyRadius > collisionTop && newY - enemyRadius < collisionBottom) {
+                            newY + enemyRadius > b.y && newY - enemyRadius < b.y + b.depth) {
                             canMoveY = false;
                         }
                     }
@@ -6763,16 +6442,12 @@
                         const perpNewY = e.y + perpY;
 
                         for (const b of nearbyBuildings) {
-                            const isoOffset = b.height * 0.5;
-                            const collisionTop = b.y - isoOffset;
-                            const collisionBottom = b.y + b.depth;
-
                             if (perpNewX + enemyRadius > b.x && perpNewX - enemyRadius < b.x + b.width &&
-                                e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
+                                e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
                                 canPerpX = false;
                             }
                             if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                                perpNewY + enemyRadius > collisionTop && perpNewY - enemyRadius < collisionBottom) {
+                                perpNewY + enemyRadius > b.y && perpNewY - enemyRadius < b.y + b.depth) {
                                 canPerpY = false;
                             }
                         }
@@ -6789,16 +6464,12 @@
                 let canKbY = true;
 
                 for (const b of nearbyBuildings) {
-                    const isoOffset = b.height * 0.5;
-                    const collisionTop = b.y - isoOffset;
-                    const collisionBottom = b.y + b.depth;
-
                     if (e.x + kbX + enemyRadius > b.x && e.x + kbX - enemyRadius < b.x + b.width &&
-                        e.y + enemyRadius > collisionTop && e.y - enemyRadius < collisionBottom) {
+                        e.y + enemyRadius > b.y && e.y - enemyRadius < b.y + b.depth) {
                         canKbX = false;
                     }
                     if (e.x + enemyRadius > b.x && e.x - enemyRadius < b.x + b.width &&
-                        e.y + kbY + enemyRadius > collisionTop && e.y + kbY - enemyRadius < collisionBottom) {
+                        e.y + kbY + enemyRadius > b.y && e.y + kbY - enemyRadius < b.y + b.depth) {
                         canKbY = false;
                     }
                 }
@@ -6913,9 +6584,7 @@
                 }
             });
 
-            // Remove dead projectiles and return to pool
-            const deadProjectiles = projectiles.filter(p => p.damage <= 0);
-            deadProjectiles.forEach(p => returnPooledProjectile(p));
+            // Remove dead projectiles
             projectiles = projectiles.filter(p => p.damage > 0);
 
             // ══════ ENEMY DEATH ══════
@@ -6923,10 +6592,6 @@
             enemies = enemies.filter(e => {
                 if (e.hp <= 0) {
                     kills++;
-
-                    // A1 COMBO SYSTEM - Track kill for combo
-                    addComboKill();
-
                     // Rate-limited kill sound (prevent audio overload during mass kills)
                     if (!AudioSystem.lastKillSound || now - AudioSystem.lastKillSound > CFG.AUDIO_KILL_COOLDOWN) {
                         AudioSystem.playHit();
@@ -6976,26 +6641,6 @@
                     // Chance for health drop
                     if (Math.random() < 0.03 && pickups.length < CFG.MAX_PICKUPS) {
                         pickups.push({ x: e.x, y: e.y, type: 'hp', value: 15 });
-                    }
-
-                    // ══════ A1 ISRAELI FOOD PICKUPS ══════
-                    // Chance for special Israeli food drops (5% from stronger enemies)
-                    if (type.xp >= 3 && Math.random() < 0.05 && pickups.length < CFG.MAX_PICKUPS) {
-                        const foodTypes = [
-                            { type: 'falafel', emoji: '🧆', value: 5, effect: 'speed', duration: 5 },
-                            { type: 'rugelach', emoji: '🥐', value: 10, effect: 'heal', duration: 0 },
-                            { type: 'bamba', emoji: '🥜', value: 3, effect: 'damage', duration: 8 }
-                        ];
-                        const food = foodTypes[Math.floor(Math.random() * foodTypes.length)];
-                        pickups.push({
-                            x: e.x + (Math.random() - 0.5) * 20,
-                            y: e.y + (Math.random() - 0.5) * 20,
-                            type: food.type,
-                            emoji: food.emoji,
-                            value: food.value,
-                            effect: food.effect,
-                            duration: food.duration
-                        });
                     }
 
                     spawnParticles(e.x, e.y, type.color, 10);
@@ -7077,9 +6722,6 @@
                 p.vx *= 0.95;
                 p.vy *= 0.95;
             });
-            // Return dead particles to pool
-            const deadParticles = particles.filter(p => p.life <= 0);
-            deadParticles.forEach(p => returnPooledParticle(p));
             particles = particles.filter(p => p.life > 0);
 
             // ══════ UPDATE FLOATING TEXTS ══════
@@ -7087,22 +6729,7 @@
                 t.y += t.vy * dt;
                 t.vy *= 0.95;
                 t.life -= dt;
-
-                // JUICY POP ANIMATION
-                const progress = 1 - (t.life / t.maxLife);
-                if (progress < 0.15) {
-                    // Pop in
-                    t.scale = progress / 0.15 * 1.5;
-                } else if (progress < 0.3) {
-                    // Settle
-                    t.scale = 1.5 - ((progress - 0.15) / 0.15) * 0.5;
-                } else {
-                    t.scale = 1;
-                }
             });
-            // Return dead floating texts to pool
-            const deadTexts = floatingTexts.filter(t => t.life <= 0);
-            deadTexts.forEach(t => returnPooledFloatingText(t));
             floatingTexts = floatingTexts.filter(t => t.life > 0);
 
             // ══════ CAMERA ══════
@@ -7116,26 +6743,6 @@
             document.getElementById('lvlVal').textContent = player.level;
             document.getElementById('timeVal').textContent = formatTime(gameTime);
             document.getElementById('killVal').textContent = kills;
-
-            // A1: Update combo display
-            const comboDisplay = document.getElementById('comboDisplay');
-            const comboVal = document.getElementById('comboVal');
-            if (comboSystem.count > 1) {
-                comboDisplay.style.display = 'flex';
-                comboVal.textContent = `x${comboSystem.count}`;
-                // Color based on combo level
-                if (comboSystem.count >= 50) {
-                    comboDisplay.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
-                } else if (comboSystem.count >= 25) {
-                    comboDisplay.style.background = 'linear-gradient(135deg, #FF6B6B, #FF8E8E)';
-                } else if (comboSystem.count >= 10) {
-                    comboDisplay.style.background = 'linear-gradient(135deg, #FF6B35, #FF8C42)';
-                } else {
-                    comboDisplay.style.background = 'linear-gradient(135deg, #4ECDC4, #44B8B0)';
-                }
-            } else {
-                comboDisplay.style.display = 'none';
-            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -7157,15 +6764,9 @@
             // Background
             drawBackground();
 
-            // World objects (behind player - with viewport culling)
+            // World objects (behind player)
             worldObjects.forEach(obj => {
-                if (obj.y < player.y) {
-                    const sx = obj.x - camera.x;
-                    const sy = obj.y - camera.y;
-                    // Skip objects outside viewport (use larger margin for tall objects like palm trees)
-                    if (sx < -150 || sx > W + 150 || sy < -150 || sy > H + 150) return;
-                    drawWorldObject(obj);
-                }
+                if (obj.y < player.y) drawWorldObject(obj);
             });
 
             // Pickups
@@ -7178,57 +6779,62 @@
                 ctx.translate(sx, sy + Math.sin(Date.now() / 150) * 4);
 
                 if (p.type === 'xp') {
-                    // Gold Shekel Coin - SIMPLIFIED for performance
+                    // Gold Shekel Coin
                     const coinSize = 10;
                     const spinAngle = Date.now() / 300;
                     const scaleX = Math.abs(Math.cos(spinAngle)) * 0.6 + 0.4;
 
                     ctx.scale(scaleX, 1);
 
-                    // Simple gold coin (no shadow, no gradient for performance)
-                    ctx.fillStyle = '#FFD700';
+                    // Coin glow
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 15;
+
+                    // Coin body gradient
+                    const coinGrad = ctx.createRadialGradient(-2, -2, 0, 0, 0, coinSize);
+                    coinGrad.addColorStop(0, '#FFF8DC');
+                    coinGrad.addColorStop(0.3, '#FFD700');
+                    coinGrad.addColorStop(0.7, '#DAA520');
+                    coinGrad.addColorStop(1, '#B8860B');
+                    ctx.fillStyle = coinGrad;
                     ctx.beginPath();
                     ctx.arc(0, 0, coinSize, 0, Math.PI * 2);
                     ctx.fill();
 
                     // Coin edge
-                    ctx.strokeStyle = '#B8860B';
+                    ctx.strokeStyle = '#8B7500';
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
 
                     // Shekel symbol (₪)
+                    ctx.shadowBlur = 0;
                     ctx.fillStyle = '#8B6914';
                     ctx.font = 'bold 11px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('₪', 0, 1);
-                } else if (p.type === 'hp') {
-                    // Health pickup (heart) - no shadow for performance
+
+                    // Shine highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(-3, -4, 4, 2, -0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Health pickup (heart)
+                    ctx.shadowColor = '#2ECC71';
+                    ctx.shadowBlur = 12;
                     ctx.font = '20px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('❤️', 0, 0);
-                } else if (['falafel', 'rugelach', 'bamba'].includes(p.type)) {
-                    // A1 Israeli food pickups
-                    ctx.font = '22px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(p.emoji, 0, 0);
-                    // Glow effect
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = p.type === 'falafel' ? '#4ECDC4' : p.type === 'rugelach' ? '#FFD700' : '#FF6B35';
-                    ctx.fillText(p.emoji, 0, 0);
-                    ctx.shadowBlur = 0;
                 }
                 ctx.restore();
             });
 
-            // Particles (with viewport culling)
+            // Particles
             particles.forEach(p => {
                 const sx = p.x - camera.x;
                 const sy = p.y - camera.y;
-                // Skip particles outside viewport
-                if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) return;
                 ctx.globalAlpha = p.life * 2;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
@@ -7237,23 +6843,17 @@
             });
             ctx.globalAlpha = 1;
 
-            // Enemies - with LOD (Level of Detail) rendering
-            const enemyCount = enemies.length;
-            const useSimpleSprites = enemyCount > CFG.LOW_DETAIL_THRESHOLD;
-            const skipHPBars = enemyCount > 80;
-            const skipShadows = enemyCount > 100;
-
+            // Enemies
             enemies.forEach(e => {
                 const sx = e.x - camera.x;
                 const sy = e.y - camera.y;
                 if (sx < -100 || sx > W + 100 || sy < -100 || sy > H + 100) return;
 
-                // Use simple sprites when many enemies
-                drawEnemy(e.type, sx, sy, e.anim, e.flash, useSimpleSprites);
+                drawEnemy(e.type, sx, sy, e.anim, e.flash);
 
-                // HP bar (skip when too many enemies)
-                if (!skipHPBars && e.hp < e.maxHp) {
-                    const type = ENEMY_TYPES[e.type];
+                // HP bar
+                const type = ENEMY_TYPES[e.type];
+                if (e.hp < e.maxHp) {
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
                     ctx.fillRect(sx - type.size / 2, sy - type.size / 2 - 10, type.size, 5);
                     ctx.fillStyle = '#E63946';
@@ -7266,14 +6866,8 @@
                 drawBoss();
             }
 
-            // Projectiles (with viewport culling)
-            projectiles.forEach(p => {
-                const sx = p.x - camera.x;
-                const sy = p.y - camera.y;
-                // Skip projectiles outside viewport
-                if (sx < -50 || sx > W + 50 || sy < -50 || sy > H + 50) return;
-                drawProjectile(p);
-            });
+            // Projectiles
+            projectiles.forEach(p => drawProjectile(p));
 
             // Dreidels
             if (player && player.weapons.dreidel) {
@@ -7283,7 +6877,8 @@
                     ctx.save();
                     ctx.translate(dx, dy);
                     ctx.rotate(d.angle * 4);
-                    // Removed shadowBlur for performance
+                    ctx.shadowColor = '#6C5CE7';
+                    ctx.shadowBlur = 15;
                     ctx.font = '32px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -7292,14 +6887,9 @@
                 });
             }
 
-            // World objects (in front of player - with viewport culling)
+            // World objects (in front of player)
             worldObjects.forEach(obj => {
-                if (obj.y >= player.y) {
-                    const sx = obj.x - camera.x;
-                    const sy = obj.y - camera.y;
-                    if (sx < -150 || sx > W + 150 || sy < -150 || sy > H + 150) return;
-                    drawWorldObject(obj);
-                }
+                if (obj.y >= player.y) drawWorldObject(obj);
             });
 
             // Player
@@ -7325,24 +6915,15 @@
             floatingTexts.forEach(t => {
                 const sx = t.x - camera.x;
                 const sy = t.y - camera.y;
-
                 ctx.save();
-                ctx.translate(sx, sy);
-                ctx.scale(t.scale, t.scale);
-
                 ctx.globalAlpha = t.life;
-                ctx.font = 'bold 24px Heebo'; // Slightly larger
+                ctx.font = 'bold 22px Heebo';
                 ctx.textAlign = 'center';
-
-                // Hard shadow/outline for better visibility
-                ctx.lineWidth = 5;
                 ctx.strokeStyle = '#000';
-                ctx.lineJoin = 'round';
-                ctx.strokeText(t.text, 0, 0);
-
+                ctx.lineWidth = 4;
+                ctx.strokeText(t.text, sx, sy);
                 ctx.fillStyle = t.color;
-                ctx.fillText(t.text, 0, 0);
-
+                ctx.fillText(t.text, sx, sy);
                 ctx.restore();
             });
 
@@ -7355,42 +6936,6 @@
             vig.addColorStop(1, 'rgba(0,0,0,0.45)');
             ctx.fillStyle = vig;
             ctx.fillRect(0, 0, W, H);
-
-            // ══════ DAY/NIGHT AMBIENT LIGHTING OVERLAY ══════
-            const ambient = getAmbientLight();
-            if (ambient < 0.95) {
-                // Night time darkness overlay
-                const darkness = 1 - ambient;
-                let overlayColor;
-                if (dayNightCycle.currentPhase === 'night') {
-                    overlayColor = `rgba(10, 10, 40, ${darkness * 0.6})`;
-                } else if (dayNightCycle.currentPhase === 'sunset') {
-                    overlayColor = `rgba(60, 30, 10, ${darkness * 0.4})`;
-                } else { // sunrise
-                    overlayColor = `rgba(40, 30, 60, ${darkness * 0.4})`;
-                }
-                ctx.fillStyle = overlayColor;
-                ctx.fillRect(0, 0, W, H);
-
-                // Shabbat candle glow during night
-                if (dayNightCycle.shabbatMode && dayNightCycle.currentPhase === 'night') {
-                    dayNightCycle.candleLights.forEach(candle => {
-                        const sx = candle.x - camera.x;
-                        const sy = candle.y - camera.y;
-                        if (sx > -100 && sx < W + 100 && sy > -100 && sy < H + 100) {
-                            const flicker = 0.8 + Math.sin(Date.now() / 200 + candle.flickerPhase) * 0.2;
-                            const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 80 * flicker);
-                            glow.addColorStop(0, `rgba(255, 200, 100, ${0.6 * flicker})`);
-                            glow.addColorStop(0.5, `rgba(255, 150, 50, ${0.3 * flicker})`);
-                            glow.addColorStop(1, 'rgba(255, 100, 0, 0)');
-                            ctx.fillStyle = glow;
-                            ctx.beginPath();
-                            ctx.arc(sx, sy, 80 * flicker, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    });
-                }
-            }
 
             // Low HP warning
             if (player && player.hp < player.maxHp * 0.3) {
@@ -7407,32 +6952,7 @@
                 ctx.globalAlpha = 1;
             }
 
-            // FPS Counter (debug)
-            if (fps < 55) {
-                ctx.fillStyle = '#FF0000';
-                ctx.font = 'bold 16px monospace';
-                ctx.textAlign = 'left';
-                ctx.fillText(`FPS: ${fps} | Enemies: ${enemies.length}`, 10, H - 10);
-            }
-
             ctx.restore();
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // PERFORMANCE MONITORING
-        // ═══════════════════════════════════════════════════════════════════
-        let fps = 60;
-        let frameCount = 0;
-        let lastFpsTime = 0;
-        let avgFrameTime = 0;
-
-        function updateFPS(timestamp) {
-            frameCount++;
-            if (timestamp - lastFpsTime >= 1000) {
-                fps = frameCount;
-                frameCount = 0;
-                lastFpsTime = timestamp;
-            }
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -7440,15 +6960,10 @@
         // ═══════════════════════════════════════════════════════════════════
         function gameLoop(timestamp) {
             if (lastTime === 0) lastTime = timestamp;
-            const rawDt = Math.min((timestamp - lastTime) / 1000, 0.1);
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
             lastTime = timestamp;
 
-            // A1: Delta time smoothing to prevent frame spike lag
-            // Smoothly interpolate between current and target dt
-            smoothedDT = smoothedDT * CFG.DT_SMOOTHING + rawDt * (1 - CFG.DT_SMOOTHING);
-
-            updateFPS(timestamp);
-            update(smoothedDT);
+            update(dt);
             draw();
 
             requestAnimationFrame(gameLoop);
@@ -8620,78 +8135,6 @@
                     // Spawn companion - handled in update
                     player.hasGolem = true;
                     break;
-                // NEW PREMIUM WEAPONS
-                case 'kiddush':
-                    player.weapons.kiddush = true;
-                    player.selectedUpgrades.add('kiddush');
-                    player.regen += 3;
-                    player.maxHp += 30;
-                    player.hp = player.maxHp;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'torah':
-                    player.weapons.torah = true;
-                    player.selectedUpgrades.add('torah');
-                    player.pierce += 3;
-                    player.damage *= 1.2;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'matzah':
-                    player.weapons.matzah = true;
-                    player.selectedUpgrades.add('matzah');
-                    player.pierce += 5;
-                    player.damage *= 0.6;
-                    player.projCount += 2;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'sufganiyah':
-                    player.weapons.sufganiyah = true;
-                    player.selectedUpgrades.add('sufganiyah');
-                    player.damage *= 1.5;
-                    player.fireRate *= 0.8;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'etrog':
-                    player.weapons.etrog = true;
-                    player.selectedUpgrades.add('etrog');
-                    player.range *= 1.3;
-                    player.damage *= 1.1;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'flag':
-                    player.weapons.flag = true;
-                    player.selectedUpgrades.add('flag');
-                    player.pierce += 10;
-                    player.damage *= 1.3;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'challa':
-                    player.weapons.challa = true;
-                    player.selectedUpgrades.add('challa');
-                    player.damage *= 0.8;
-                    player.fireRate *= 0.7;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'tefillin':
-                    player.weapons.tefillin = true;
-                    player.selectedUpgrades.add('tefillin');
-                    player.armor += 0.2;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'havdalah':
-                    player.weapons.havdalah = true;
-                    player.selectedUpgrades.add('havdalah');
-                    player.damage *= 1.2;
-                    sessionStats.weaponsUnlocked++;
-                    break;
-                case 'maccabee':
-                    player.weapons.maccabee = true;
-                    player.selectedUpgrades.add('maccabee');
-                    player.damage *= 2.0;
-                    player.speed *= 1.2;
-                    player.critChance += 0.2;
-                    sessionStats.weaponsUnlocked++;
-                    break;
             }
         }
 
@@ -8701,7 +8144,7 @@
         let isPaused = false;
 
         function togglePause() {
-            if (gameState !== 'playing') return; // Can't pause if not in game
+            if (!running) return; // Can't pause if not in game
             isPaused = !isPaused;
             const pauseScreen = document.getElementById('pauseScreen');
             if (isPaused) {
@@ -8723,22 +8166,25 @@
 
         function returnToMenu() {
             // Stop the game and return to main menu
-            gameState = 'menu';
+            running = false;
             isPaused = false;
             document.getElementById('pauseScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
-            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
             canvas.classList.add('hidden');
-            document.getElementById('hud').style.display = 'none';
+            document.getElementById('hud').classList.add('hidden');
             AudioSystem.stopMusic();
             AudioSystem.startMusic(280); // Menu tempo
         }
 
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
-            // ESC to toggle pause during gameplay (only when level up screen not showing)
-            if (e.code === 'Escape' && gameState === 'playing' && document.getElementById('levelUpScreen').classList.contains('hidden')) {
-                togglePause();
+            // ESC to toggle pause during gameplay
+            if (e.code === 'Escape' && running && !document.getElementById('levelUpScreen').classList.contains('hidden') === false) {
+                // Only allow pause if level up screen is not showing
+                if (document.getElementById('levelUpScreen').classList.contains('hidden')) {
+                    togglePause();
+                }
             }
         });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -8767,29 +8213,8 @@
             AudioSystem.playClick();
             returnToMenu();
         };
-        document.getElementById('shareBtn').onclick = () => {
-            AudioSystem.playClick();
-            const text = `I survived ${formatTime(gameTime)} in Sababa Survivor! 🏖️\nLevel ${player.level} | ${kills} Enemies Defeated\nCan you beat the heat? ✡️🔥`;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('shareBtn');
-                const originalText = btn.textContent;
-                btn.textContent = 'COPIED! ✓';
-                setTimeout(() => btn.textContent = originalText, 2000);
-            });
-        };
         document.getElementById('weaponsBtn').onclick = () => { AudioSystem.playClick(); showWeaponSelect(); };
         document.getElementById('weaponsBackBtn').onclick = () => { AudioSystem.playClick(); hideWeaponSelect(); };
-
-        // Daily Challenges button handlers
-        document.getElementById('dailyBtn').onclick = () => {
-            AudioSystem.playClick();
-            renderDailyChallenges();
-            document.getElementById('dailyScreen').classList.remove('hidden');
-        };
-        document.getElementById('dailyBackBtn').onclick = () => {
-            AudioSystem.playClick();
-            document.getElementById('dailyScreen').classList.add('hidden');
-        };
         document.getElementById('questsBtn').onclick = () => { AudioSystem.playClick(); showQuestScreen(); };
         document.getElementById('questsBackBtn').onclick = () => { AudioSystem.playClick(); hideQuestScreen(); };
         document.getElementById('leaderboardBtn').onclick = () => { AudioSystem.playClick(); toggleLeaderboard(); };
@@ -9106,70 +8531,8 @@
         checkFirstTimeUser();
 
         // Start
-        renderDailyChallenges(); // Initial render to show badge
         requestAnimationFrame(gameLoop);
     </script>
-</body>
-
-</html> updateMenuXPDisplay();
-updateUsernameDisplay();
-checkFirstTimeUser();
-
-// Start
-renderDailyChallenges(); // Initial render to show badge
-requestAnimationFrame(gameLoop);
-</script>
-</body>
-
-</html>
-</div>
-`;
-});
-
-list.innerHTML = html;
-}
-
-function toggleLeaderboard() {
-const popup = document.getElementById('leaderboardPopup');
-if (popup.classList.contains('show')) {
-hideLeaderboard();
-} else {
-showLeaderboard();
-}
-}
-
-function showLeaderboard() {
-document.getElementById('leaderboardPopup').classList.add('show');
-document.getElementById('playerNameInput').value = metaProgress.playerName || '';
-loadLeaderboard('xp');
-}
-
-function hideLeaderboard() {
-document.getElementById('leaderboardPopup').classList.remove('show');
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════
-loadMetaProgress();
-updateMenuXPDisplay();
-updateUsernameDisplay();
-checkFirstTimeUser();
-
-// Start
-renderDailyChallenges(); // Initial render to show badge
-requestAnimationFrame(gameLoop);
-</script>
-</body>
-
-</html> updateMenuXPDisplay();
-updateUsernameDisplay();
-checkFirstTimeUser();
-
-// Start
-renderDailyChallenges(); // Initial render to show badge
-requestAnimationFrame(gameLoop);
-</script>
 </body>
 
 </html>
