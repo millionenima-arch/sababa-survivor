@@ -4950,44 +4950,6 @@
                 }
             }
 
-            // ══════ STREETS between buildings (Tel Aviv style) - Draw BEFORE buildings ══════
-            // Draw street markings in world coordinates
-            const streetStartY = ws / 2 - 700;
-            const worldLeftX = -ws / 2;
-            const worldRightX = ws / 2;
-
-            // Street pavement texture (darker strips) - world fixed
-            for (let row = 0; row < 3; row++) {
-                const streetWorldY = streetStartY + row * 350 + 200;
-                const streetScreenY = streetWorldY - camera.y;
-                const streetScreenX = worldLeftX - camera.x;
-                const streetWidth = ws;
-
-                if (streetScreenY > -150 && streetScreenY < H + 150) {
-                    ctx.fillStyle = 'rgba(60,60,65,0.3)';
-                    ctx.fillRect(streetScreenX, streetScreenY, streetWidth, 150);
-                }
-            }
-
-            // Street center lines - world fixed
-            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-            ctx.lineWidth = 4;
-            ctx.setLineDash([30, 30]);
-            for (let row = 0; row < 3; row++) {
-                const lineWorldY = streetStartY + row * 350 + 275;
-                const lineScreenY = lineWorldY - camera.y;
-                const lineStartX = worldLeftX - camera.x;
-                const lineEndX = worldRightX - camera.x;
-
-                if (lineScreenY > -50 && lineScreenY < H + 50) {
-                    ctx.beginPath();
-                    ctx.moveTo(lineStartX, lineScreenY);
-                    ctx.lineTo(lineEndX, lineScreenY);
-                    ctx.stroke();
-                }
-            }
-            ctx.setLineDash([]);
-
             // ══════ 3D ISOMETRIC BUILDINGS - TEL AVIV BAUHAUS "WHITE CITY" ══════
             // Sort buildings by Y for proper depth rendering (back to front)
             const sortedBuildings = [...buildings].sort((a, b) => a.y - b.y);
@@ -5243,6 +5205,44 @@
                 ctx.fillStyle = 'rgba(0,0,0,0.1)';
                 ctx.fillRect(doorX - 8, doorY - 3, 56, 3);
             });
+
+            // ══════ STREETS between buildings (Tel Aviv style) ══════
+            // Draw street markings in world coordinates
+            const streetStartY = ws / 2 - 700;
+            const worldLeftX = -ws / 2;
+            const worldRightX = ws / 2;
+
+            // Street pavement texture (darker strips) - world fixed
+            for (let row = 0; row < 3; row++) {
+                const streetWorldY = streetStartY + row * 350 + 200;
+                const streetScreenY = streetWorldY - camera.y;
+                const streetScreenX = worldLeftX - camera.x;
+                const streetWidth = ws;
+
+                if (streetScreenY > -150 && streetScreenY < H + 150) {
+                    ctx.fillStyle = 'rgba(60,60,65,0.3)';
+                    ctx.fillRect(streetScreenX, streetScreenY, streetWidth, 150);
+                }
+            }
+
+            // Street center lines - world fixed
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([30, 30]);
+            for (let row = 0; row < 3; row++) {
+                const lineWorldY = streetStartY + row * 350 + 275;
+                const lineScreenY = lineWorldY - camera.y;
+                const lineStartX = worldLeftX - camera.x;
+                const lineEndX = worldRightX - camera.x;
+
+                if (lineScreenY > -50 && lineScreenY < H + 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(lineStartX, lineScreenY);
+                    ctx.lineTo(lineEndX, lineScreenY);
+                    ctx.stroke();
+                }
+            }
+            ctx.setLineDash([]);
 
             // ══════ SUBTLE VIGNETTE ══════
             const vignetteGrad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.4, W / 2, H / 2, Math.max(W, H) * 0.7);
@@ -6199,20 +6199,14 @@
             let canMoveY = true;
 
             for (const b of buildings) {
-                // Isometric offset for 3D visual (buildings extend upward visually)
-                const isoOffset = b.height * 0.5;
-                // Collision box extends from b.y - isoOffset to b.y + b.depth
-                const collisionTop = b.y - isoOffset;
-                const collisionBottom = b.y + b.depth;
-
                 // Check X movement
                 if (newX + playerRadius > b.x && newX - playerRadius < b.x + b.width &&
-                    player.y + playerRadius > collisionTop && player.y - playerRadius < collisionBottom) {
+                    player.y + playerRadius > b.y && player.y - playerRadius < b.y + b.depth) {
                     canMoveX = false;
                 }
                 // Check Y movement
                 if (player.x + playerRadius > b.x && player.x - playerRadius < b.x + b.width &&
-                    newY + playerRadius > collisionTop && newY - playerRadius < collisionBottom) {
+                    newY + playerRadius > b.y && newY - playerRadius < b.y + b.depth) {
                     canMoveY = false;
                 }
             }
