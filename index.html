@@ -1741,14 +1741,15 @@
             SPAWN_RATE: 1.4,
             XP_BASE: 12,
             WORLD_SIZE: 5000,
-            // Performance limits
-            MAX_PARTICLES: 150,
-            MAX_FLOATING_TEXTS: 30,
-            MAX_ENEMIES: 300,
-            MAX_PROJECTILES: 200,
-            MAX_PICKUPS: 500,
-            GRID_CELL_SIZE: 150, // Spatial grid cell size
-            LOW_DETAIL_THRESHOLD: 80 // Switch to simple rendering above this enemy count
+            // Performance limits (tuned for smooth 60fps)
+            MAX_PARTICLES: 80,          // Reduced from 150
+            MAX_FLOATING_TEXTS: 20,     // Reduced from 30
+            MAX_ENEMIES: 200,           // Reduced from 300
+            MAX_PROJECTILES: 150,       // Reduced from 200
+            MAX_PICKUPS: 400,           // Reduced from 500
+            GRID_CELL_SIZE: 150,        // Spatial grid cell size
+            LOW_DETAIL_THRESHOLD: 50,   // Switch to simple rendering above this enemy count (was 80)
+            AUDIO_KILL_COOLDOWN: 50     // Minimum ms between kill sounds
         };
 
         // ═══════════════════════════════════════════════════════════════════
@@ -6493,8 +6494,12 @@
                         // Check if this is a kill
                         const isKill = e.hp <= 0;
 
-                        // Visual feedback - more particles for crits/kills (reduced when many enemies)
-                        const particleCount = isKill ? 12 : (isCrit ? 8 : 4);
+                        // Visual feedback - dynamically reduce particles based on enemy count
+                        const highEnemyCount = enemies.length > CFG.LOW_DETAIL_THRESHOLD;
+                        const veryHighCount = enemies.length > 100;
+                        let particleCount = isKill ? 12 : (isCrit ? 8 : 4);
+                        if (veryHighCount) particleCount = 1;
+                        else if (highEnemyCount) particleCount = Math.ceil(particleCount / 2);
                         spawnParticles(e.x, e.y, type.color, particleCount);
 
                         // REMOVED: Screen flash for critical hits
@@ -6556,10 +6561,15 @@
             projectiles = projectiles.filter(p => p.damage > 0);
 
             // ══════ ENEMY DEATH ══════
+            const now = performance.now();
             enemies = enemies.filter(e => {
                 if (e.hp <= 0) {
                     kills++;
-                    AudioSystem.playHit(); // Kill sound effect
+                    // Rate-limited kill sound (prevent audio overload during mass kills)
+                    if (!AudioSystem.lastKillSound || now - AudioSystem.lastKillSound > CFG.AUDIO_KILL_COOLDOWN) {
+                        AudioSystem.playHit();
+                        AudioSystem.lastKillSound = now;
+                    }
                     const type = ENEMY_TYPES[e.type];
 
                     // Track kill by enemy type
